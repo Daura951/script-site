@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { useNavigate } from "react-router";
+import Guild_logo_white from "../assets/Guild_logo_white.png";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [userOpen, setUserOpen] = useState(false);
 
   return (
     <nav className="relative w-full bg-white/8 backdrop-saturate-150 border-b border-white/15 backdrop-blur-xl after:bg-white/10 ">
@@ -56,7 +56,7 @@ export default function Navbar() {
           <div className="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div className="flex shrink-0 items-center">
               <img
-                src="/src/assets/Guild_logo_white.png"
+                src={Guild_logo_white}
                 alt="Your Company"
                 className="h-10 w-auto hover:scale-110 transition-transform cursor-pointer"
                 onClick={() => navigate("/")}
@@ -89,7 +89,7 @@ export default function Navbar() {
               <div className="relative ml-3">
                 <button
                   popoverTarget="user-menu"
-                  className={`[anchor-name:--user-menu] hover:cursor-pointer ${userOpen ? "" : "hover:scale-110 transition-transform"} relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
+                  className={`[anchor-name:--user-menu] hover:cursor-pointer ${false ? "" : "hover:scale-110 transition-transform"} relative flex rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-500`}
                 >
                   <span className="absolute -inset-1.5"></span>
                   <span className="sr-only">Open user menu</span>

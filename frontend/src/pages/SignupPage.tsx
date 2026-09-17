@@ -4,6 +4,7 @@ import { useNavigate } from "react-router";
 import { Env } from "../Env";
 import SuccessModal from "../components/SuccessModal";
 import { SignupRequest } from "../types/LoginTypes";
+import DiscordButton from "../components/DiscordButton";
 
 export default function SignupPage() {
   const nav = useNavigate();
@@ -44,7 +45,7 @@ export default function SignupPage() {
 
   return (
     <div className="pt-4 flex-1 flex flex-col text-white items-center justify-center bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
-      <div className="mt-16 text-black border p-4 rounded border-slate-400/20 shadow-lg bg-white">
+      <div className="mt-16 flex flex-col gap-5 text-black border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
         <header>
           <h1 className="text-4xl">Sign up!</h1>
         </header>
@@ -72,9 +73,7 @@ export default function SignupPage() {
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <ul className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors.map((err, i) => (
-                      <li key={i}>{err?.message}</li>
-                    ))}
+                    <li>{field.state.meta.errors[0]?.message}</li>
                   </ul>
                 )}
               </div>
@@ -95,9 +94,7 @@ export default function SignupPage() {
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <ul className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors.map((err, i) => (
-                      <li key={i}>{err?.message}</li>
-                    ))}
+                    <li>{field.state.meta.errors[0]?.message}</li>
                   </ul>
                 )}
               </div>
@@ -120,9 +117,7 @@ export default function SignupPage() {
                 />
                 {field.state.meta.errors?.length > 0 && (
                   <ul className="mt-1 text-sm text-red-600">
-                    {field.state.meta.errors.map((err, i) => (
-                      <li key={i}>{err?.message}</li>
-                    ))}
+                    <li>{field.state.meta.errors[0]?.message}</li>
                   </ul>
                 )}
               </div>
@@ -133,13 +128,23 @@ export default function SignupPage() {
             children={([canSubmit, isSubmitting]) => (
               <button
                 disabled={!canSubmit || isSubmitting}
-                className="p-2 rounded-lg w-25 md:w-50 bg-white border border-slate-600/50 text-xl font-bold mt-5 hover:bg-slate-200 hover:cursor-pointer disabled:bg-slate-600"
+                className="p-2 rounded-lg w-25 md:w-50 bg-white border border-slate-600/50 text-xl font-bold mt-5 hover:bg-slate-200 hover:cursor-pointer disabled:opacity-40 disabled:hover:bg-white disabled:hover:cursor-default"
               >
                 Sign Up
               </button>
             )}
           />
         </form>
+
+        <div className="flex flex-col items-center justify-center gap-4">
+          <div className="mt-5 flex w-full flex-row items-center gap-2">
+            <hr className="grow" />
+            <p>Or continue with</p>
+            <hr className="grow" />
+          </div>
+          <DiscordButton />
+        </div>
+
         {(signupMutation.isSuccess || signupMutation.isError) && (
           <SuccessModal
             isSuccess={signupMutation.isSuccess}
