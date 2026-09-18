@@ -12,7 +12,8 @@ public class FrontendForwardingController {
     public String forwardToFrontend(HttpServletRequest request) {
         String uri = request.getRequestURI();
 
-        if (uri.startsWith("/api") || uri.startsWith("/index.html") || uri.startsWith("/h2-console")) {
+        if (uri.startsWith("/api") || uri.startsWith("/index.html") || uri.startsWith("/h2-console")
+                || uri.startsWith("/login")) {
             return null;
         }
 

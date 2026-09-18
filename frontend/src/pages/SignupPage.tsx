@@ -1,37 +1,34 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 import { Env } from "../Env";
-import SuccessModal from "../components/SuccessModal";
-import { SignupRequest } from "../types/LoginTypes";
 import DiscordButton from "../components/DiscordButton";
+import SuccessModal from "../components/SuccessModal";
+import { apiFetch } from "../hooks/ApiClient";
+import { SignupRequest, User } from "../types/LoginTypes";
 
 export default function SignupPage() {
   const nav = useNavigate();
+  const [searchParams] = useSearchParams();
+  const discordName = searchParams.get("username");
+  const discordId = searchParams.get("id");
+  const discordEmail = searchParams.get("email");
 
   const signupMutation = useMutation({
-    mutationFn: async (data: SignupRequest) => {
-      const formData = new FormData();
-      formData.append("username", data.username);
-      formData.append("email", data.email);
-      formData.append("password", data.password);
-
-      const response = await fetch(`${Env.API_BASE_URL}/users/signup`, {
+    mutationFn: async (data: SignupRequest) =>
+      apiFetch(`${Env.API_BASE_URL}/users/signup`, {
         method: "POST",
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error("Error creating user");
-      }
-    },
+        body: data,
+        schema: User,
+      }),
   });
 
   const form = useForm({
     defaultValues: {
-      username: "",
+      username: discordName ?? "",
       password: "",
-      email: "",
+      email: discordEmail ?? "",
+      discordId: discordId ?? "",
     },
 
     onSubmit: async ({ value }) => {
@@ -44,8 +41,8 @@ export default function SignupPage() {
   });
 
   return (
-    <div className="pt-4 flex-1 flex flex-col text-white items-center justify-center bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
-      <div className="mt-16 flex flex-col gap-5 text-black border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
+    <div className="pt-4 flex-1 flex flex-col  items-center justify-center bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
+      <div className="mt-16 flex flex-col gap-5 border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
         <header>
           <h1 className="text-4xl">Sign up!</h1>
         </header>
@@ -60,7 +57,11 @@ export default function SignupPage() {
             name="username"
             children={(field) => (
               <div className="flex flex-col">
+                <label htmlFor="username">
+                  Username<span className="text-red-600">*</span>
+                </label>
                 <input
+                  id="username"
                   type="text"
                   className={`p-1.5 rounded border ${field.state.meta.errors.length ? "border-red-600 focus:ring-red-600/20" : "border-blue-600/20 focus:ring-blue-600/20"}  w-75 focus:outline-blue-600/20 focus:ring-2  focus:outline-none`}
                   placeholder="username"
@@ -83,8 +84,11 @@ export default function SignupPage() {
             name="email"
             children={(field) => (
               <div className="flex flex-col">
+                <label htmlFor="email">
+                  Email<span className="text-red-600">*</span>
+                </label>
                 <input
-                  type="email"
+                  id="email"
                   className={`p-1.5 rounded border ${field.state.meta.errors.length ? "border-red-600 focus:ring-red-600/20" : "border-blue-600/20 focus:ring-blue-600/20"}  w-75 focus:outline-blue-600/20 focus:ring-2  focus:outline-none`}
                   placeholder="email"
                   value={field.state.value}
@@ -104,7 +108,11 @@ export default function SignupPage() {
             name="password"
             children={(field) => (
               <div className="flex flex-col">
+                <label htmlFor="password">
+                  Password<span className="text-red-600">*</span>
+                </label>
                 <input
+                  id="password"
                   type="password"
                   className={`p-1.5 rounded border ${field.state.meta.errors.length ? "border-red-600 focus:ring-red-600/20" : "border-blue-600/20 focus:ring-blue-600/20"}  w-75 focus:outline-blue-600/20 focus:ring-2  focus:outline-none`}
                   placeholder="password"
@@ -121,6 +129,16 @@ export default function SignupPage() {
                   </ul>
                 )}
               </div>
+            )}
+          />
+          <form.Field
+            name="discordId"
+            children={() => (
+              <input
+                type="hidden"
+                id="discordId"
+                defaultValue={discordId ?? ""}
+              />
             )}
           />
           <form.Subscribe
@@ -142,7 +160,7 @@ export default function SignupPage() {
             <p>Or continue with</p>
             <hr className="grow" />
           </div>
-          <DiscordButton />
+          <DiscordButton type="signup" />
         </div>
 
         {(signupMutation.isSuccess || signupMutation.isError) && (

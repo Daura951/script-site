@@ -1,5 +1,4 @@
 import guild_logo_white from "../assets/Guild_logo_white.png";
-import DiscordButton from "./DiscordButton";
 
 export default function Footer() {
   return (

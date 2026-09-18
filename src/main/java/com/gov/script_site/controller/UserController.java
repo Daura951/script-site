@@ -1,8 +1,8 @@
 package com.gov.script_site.controller;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -20,7 +20,7 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/signup")
-    public ResponseEntity<UserDTO> createUser(@ModelAttribute SignupDTO signup) {
+    public ResponseEntity<UserDTO> createUser(@RequestBody SignupDTO signup) {
         return userService.createUser(signup);
     }
 

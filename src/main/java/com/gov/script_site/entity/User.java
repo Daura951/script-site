@@ -35,6 +35,9 @@ public class User implements UserDetails {
 
     private String password;
 
+    @Column(name = "discord_id")
+    private String discordId;
+
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;

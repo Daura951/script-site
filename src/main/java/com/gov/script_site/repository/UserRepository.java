@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.gov.script_site.entity.User;
 
 public interface UserRepository extends JpaRepository<User, UUID> {
-    public Optional<User> findByUsername(String username);
+    Optional<User> findByUsername(String username);
+
+    Optional<User> findByDiscordId(String discordId);
 
 }
