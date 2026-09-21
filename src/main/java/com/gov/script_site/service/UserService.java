@@ -34,4 +34,11 @@ public class UserService {
         return new ResponseEntity<UserDTO>(userMapper.UserToUserDto(user), HttpStatus.CREATED);
     }
 
+    public ResponseEntity<UserDTO> getAuthenticatedUser(User user) {
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(userMapper.UserToUserDto(user));
+    }
+
 }

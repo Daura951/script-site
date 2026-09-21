@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useContext, useState } from "react";
 import { useNavigate } from "react-router";
 import Guild_logo_white from "../assets/Guild_logo_white.png";
+import { AuthContext, type AuthContextType } from "../context/AuthContext";
 
 export default function Navbar() {
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const authContext = useContext(AuthContext);
+  const { username } = authContext as AuthContextType;
 
   return (
     <nav className="relative w-full bg-white/8 backdrop-saturate-150 border-b border-white/15 backdrop-blur-xl after:bg-white/10 ">
@@ -66,21 +69,31 @@ export default function Navbar() {
               <button
                 aria-current="page"
                 className="rounded-md bg-purple-975/50 px-3 py-2 text-sm font-medium text-white hover:cursor-pointer"
+                onClick={() => navigate("/")}
               >
-                Dashboard
+                Home
               </button>
-              <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer">
+              <button
+                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                onClick={() => navigate("/about")}
+              >
+                About
+              </button>
+              <button
+                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                onClick={() => navigate("/team")}
+              >
                 Team
               </button>
-              <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer">
-                Projects
-              </button>
-              <button className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer">
-                Calendar
+              <button
+                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                onClick={() => navigate("/scripts")}
+              >
+                Scripts
               </button>
             </div>
           </div>
-          {true && (
+          {username && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
               <button
                 type="button"

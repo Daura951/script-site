@@ -45,6 +45,7 @@ public class SecurityConfig {
             config.setAllowedOriginPatterns(List.of("*"));
             config.setAllowedMethods(List.of("*"));
             config.setAllowCredentials(true);
+            config.setAllowedHeaders(List.of("*"));
             return config;
         }));
         http.headers(headers -> headers.frameOptions(frame -> frame.disable()));

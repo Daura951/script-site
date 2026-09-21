@@ -18,5 +18,7 @@ export const User = z.object({
   id: z.string(),
   username: z.string(),
   email: z.email(),
+  discordEnabled: z.boolean(),
+  permissions: z.array(z.string()),
 });
 export type User = z.infer<typeof User>;
