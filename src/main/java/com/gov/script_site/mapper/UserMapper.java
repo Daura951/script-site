@@ -19,6 +19,7 @@ public abstract class UserMapper {
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "discordId", ignore = true)
+    @Mapping(target = "scripts", ignore = true)
     public abstract User UserDtoToUser(UserDTO dto);
 
     @AfterMapping

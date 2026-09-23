@@ -8,7 +8,7 @@ import org.springframework.security.oauth2.core.endpoint.OAuth2AuthorizationRequ
 
 import jakarta.servlet.http.HttpServletRequest;
 
-//Needed to apply how we oauth'd
+//Needed to apply how we oauthed
 public class Oauth2AuthorizationResolver implements OAuth2AuthorizationRequestResolver {
 
     private final DefaultOAuth2AuthorizationRequestResolver defaultResolver;

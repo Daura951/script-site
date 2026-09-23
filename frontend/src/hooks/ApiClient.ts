@@ -62,7 +62,7 @@ export async function apiFetch<
       });
       throw validationError;
     }
-    data = parsed;
+    data = parsed.data;
   }
   await onSuccess?.(data as any);
   return data as any;
