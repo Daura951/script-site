@@ -1,70 +1,54 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Tag } from "../types/ScriptTypes";
+import SearchableDropdown from "./SearchableDropdown";
+import { ClosableTagButton } from "./TagButtons";
+import { Env } from "../Env";
 
 type TagInputProps = {
-  values: string[];
-  onChange: (tags: string[]) => void;
+  values: Tag[];
 };
 
-export default function TagInput({ values, onChange }: TagInputProps) {
+export default function TagInput({ values }: TagInputProps) {
   const [tag, setTag] = useState("");
-  const [tags, setTags] = useState<string[]>(values);
+  const [tags, setTags] = useState<Tag[]>(values);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    const { key } = e;
-    const newTag = tag.trim();
-
-    if (
-      (key === "Enter" || key === "," || key === "tab") &&
-      newTag.length &&
-      !tags.includes(newTag)
-    ) {
-      e.preventDefault();
-      setTags((prev) => {
-        const latestTags = [...prev, newTag];
-        onChange(latestTags);
-        return latestTags;
-      });
+  const handleTagSelection = (t: Tag) => {
+    if (!tags.some((v) => v.id == t.id)) {
+      setTags((prev) => [...prev, t]);
       setTag("");
-    } else if (key === "Backspace" && !newTag.length && tags.length) {
-      const tagsCopy = tags;
-      const lastTag = tagsCopy.pop();
-      setTags(tagsCopy);
-      onChange(tagsCopy);
-      setTag(lastTag ?? "");
     }
   };
 
   const removeTag = (i: number) => {
     setTags((prev) => {
-      const latestTags = prev.filter((_, id) => i !== id);
-      onChange(latestTags);
+      const latestTags = prev.filter((t) => i !== t.id);
       return latestTags;
     });
   };
 
   return (
-    <div className="bg-blue-900/40 p-2">
-      <div className="flex flex-wrap gap-4 max-w-xl">
-        {tags.map((tag, i) => (
-          <div key={i} className="flex  bg-gray-600">
-            <p className="px-2">{tag}</p>
-            <button
-              onClick={() => removeTag(i)}
-              className="bg-gray-800 px-1.5 hover:cursor-pointer"
-            >
-              &times;
-            </button>
-          </div>
-        ))}
-        <input
-          type="text"
-          onChange={(e) => setTag(e.target.value)}
-          value={tag}
-          onKeyDown={(e) => handleKeyDown(e)}
-          placeholder="tags"
-          className="outline-none"
-        />
+    <div>
+      <div className="bg-blue-900/40 p-2">
+        <div className="flex flex-wrap gap-4 max-w-xl">
+          {tags.map((tag, i) => (
+            <ClosableTagButton tag={tag} removeTag={removeTag} key={i} />
+          ))}
+          <input
+            type="text"
+            onChange={(e) => setTag(e.target.value)}
+            value={tag}
+            placeholder="tags"
+            className="outline-none"
+          />
+        </div>
       </div>
+      <SearchableDropdown
+        url={`${Env.API_BASE_URL}/tags`}
+        input={tag}
+        schema={Tag}
+        getLabel={(tag) => tag.tag}
+        onSelect={handleTagSelection}
+      />
     </div>
   );
 }

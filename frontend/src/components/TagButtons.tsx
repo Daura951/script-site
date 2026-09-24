@@ -33,14 +33,11 @@ export const ClosableTagButton = ({
   removeTag,
 }: ClosableTagButtonProps) => {
   return (
-    <div
-      key={tag.id}
-      className={`flex ${colorDictionary[tag.type].bg} rounded`}
-    >
+    <div className={`flex ${colorDictionary[tag.type].bg} rounded`}>
       <p className="px-2">{tag.tag}</p>
       <button
         onClick={() => removeTag(tag.id)}
-        className={`${colorDictionary[tag.type].hoverBg} px-1.5 hover:cursor-pointer"`}
+        className={`${colorDictionary[tag.type].hoverBg} px-1.5 hover:cursor-pointer`}
       >
         &times;
       </button>

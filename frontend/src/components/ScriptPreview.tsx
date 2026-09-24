@@ -11,7 +11,7 @@ export default function ScriptPreview({ script }: ScriptPreviewProps) {
 
   return (
     <div
-      className="border p-2 rounded-lg border-white/20 w-5xl flex flex-col gap-2 bg-blue-950 shadow hover:shadow-blue-200 hover:cursor-pointer"
+      className="border p-2 rounded-lg border-white/20 w-xs md:w-5xl flex flex-col gap-2 bg-blue-950 shadow hover:shadow-blue-200 hover:cursor-pointer"
       onClick={() => nav(`/script/${script.id}`)}
     >
       <div>
@@ -31,7 +31,7 @@ export default function ScriptPreview({ script }: ScriptPreviewProps) {
         {script.content}
       </p>
 
-      <div className="flex gap-2">
+      <div className="flex flex-wrap md:flex-nowrap gap-2">
         {script.tags.map((tag, i) => (
           <TagButton tag={tag} key={i} />
         ))}
