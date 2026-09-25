@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import z, { url } from "zod";
+import z from "zod";
 import { apiFetch } from "../hooks/ApiClient";
 
 type SearchableDropdownProps<T extends z.ZodType> = {

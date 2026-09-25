@@ -1,5 +1,6 @@
 package com.gov.script_site.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -11,5 +12,7 @@ public interface UserRepository extends JpaRepository<User, UUID> {
     Optional<User> findByUsername(String username);
 
     Optional<User> findByDiscordId(String discordId);
+
+    List<User> findByUsernameStartingWithIgnoreCase(String username);
 
 }

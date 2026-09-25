@@ -11,8 +11,8 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public abstract class ScriptMapper {
 
-    public abstract ScriptDTO scriptToDto(Script script);
+    public abstract ScriptDTO toDto(Script script);
 
-    public abstract Script dtoToScript(ScriptDTO dto);
+    public abstract Script toEntity(ScriptDTO dto);
 
 }

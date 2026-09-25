@@ -14,13 +14,13 @@ public abstract class UserMapper {
 
     @Mapping(target = "discordEnabled", ignore = true)
     @Mapping(target = "permissions", ignore = true)
-    public abstract UserDTO UserToUserDto(User user);
+    public abstract UserDTO toDto(User user);
 
     @Mapping(target = "password", ignore = true)
     @Mapping(target = "authorities", ignore = true)
     @Mapping(target = "discordId", ignore = true)
     @Mapping(target = "scripts", ignore = true)
-    public abstract User UserDtoToUser(UserDTO dto);
+    public abstract User toEntity(UserDTO dto);
 
     @AfterMapping
     protected void applyDiscordEnabled(User user, @MappingTarget UserDTO userDTO) {

@@ -1,11 +1,14 @@
 package com.gov.script_site.controller;
 
+import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gov.script_site.entity.User;
@@ -27,7 +30,12 @@ public class UserController {
         return userService.createUser(signup);
     }
 
-    @GetMapping()
+    @GetMapping
+    public ResponseEntity<List<UserDTO>> getUsersWithName(@RequestParam String filter) {
+        return userService.getUsersWithName(filter);
+    }
+
+    @GetMapping("/authenticated")
     public ResponseEntity<UserDTO> getAuthenticatedUser(@AuthenticationPrincipal User user) {
         return userService.getAuthenticatedUser(user);
     }

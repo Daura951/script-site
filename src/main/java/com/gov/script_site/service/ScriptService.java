@@ -21,7 +21,7 @@ public class ScriptService {
 
     public Page<ScriptDTO> getAllScripts(Pageable pageable) {
         List<ScriptDTO> scripts = scriptRepository.findAll(pageable).getContent().stream()
-                .map(s -> scriptMapper.scriptToDto(s)).toList();
+                .map(s -> scriptMapper.toDto(s)).toList();
 
         return new PageImpl<>(scripts, pageable, scriptRepository.count());
     }

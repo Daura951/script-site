@@ -1,6 +1,8 @@
 
 package com.gov.script_site.service;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -31,14 +33,23 @@ public class UserService {
         }
 
         user = userRepository.save(user);
-        return new ResponseEntity<UserDTO>(userMapper.UserToUserDto(user), HttpStatus.CREATED);
+        return new ResponseEntity<UserDTO>(userMapper.toDto(user), HttpStatus.CREATED);
     }
 
     public ResponseEntity<UserDTO> getAuthenticatedUser(User user) {
         if (user == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(userMapper.UserToUserDto(user));
+        return ResponseEntity.ok(userMapper.toDto(user));
+    }
+
+    public ResponseEntity<List<UserDTO>> getUsersWithName(String filter) {
+        List<User> foundUsers = userRepository.findByUsernameStartingWithIgnoreCase(filter);
+
+        if (foundUsers.size() == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(foundUsers.stream().map(u -> userMapper.toDto(u)).toList());
     }
 
 }

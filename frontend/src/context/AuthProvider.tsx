@@ -17,7 +17,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   } = useQuery<User | null>({
     queryKey: ["userAuthQuery"],
     queryFn: async (): Promise<User> =>
-      apiFetch(`${Env.API_BASE_URL}/users`, {
+      apiFetch(`${Env.API_BASE_URL}/users/authenticated`, {
         method: "GET",
         schema: User,
       }),
@@ -39,7 +39,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     const data = queryClient.getQueryData(["userAuthQuery"]);
 
     if (!data) {
-      const res = await apiFetch(`${Env.API_BASE_URL}/users`, {
+      const res = await apiFetch(`${Env.API_BASE_URL}/users/authenticated`, {
         method: "GET",
         schema: User,
       });

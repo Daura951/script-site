@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router";
 import type { Script } from "../types/ScriptTypes";
-import { TagButton } from "./TagButtons";
+import { InputButton } from "./MultiInputButtons";
 
 type ScriptPreviewProps = {
   script: Script;
@@ -33,7 +33,7 @@ export default function ScriptPreview({ script }: ScriptPreviewProps) {
 
       <div className="flex flex-wrap md:flex-nowrap gap-2">
         {script.tags.map((tag, i) => (
-          <TagButton tag={tag} key={i} />
+          <InputButton valueType={tag.type} label={tag.tag} key={i} />
         ))}
       </div>
     </div>

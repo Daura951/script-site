@@ -27,3 +27,18 @@ export type Tags = z.infer<typeof Tags>;
 
 export const Scripts = PagedResponse(Script);
 export type Scripts = z.infer<typeof Scripts>;
+
+export const SearchDate = z.object({
+  date: z.coerce.date(),
+  sort: z.string(),
+});
+export type SearchDate = z.infer<typeof SearchDate>;
+
+export const ScriptSearch = z.object({
+  scriptTitle: z.string(),
+  tags: z.array(Tag),
+  authors: z.array(User),
+  createDate: SearchDate.optional(),
+  modifyDate: SearchDate.optional(),
+});
+export type ScriptSearch = z.infer<typeof ScriptSearch>;

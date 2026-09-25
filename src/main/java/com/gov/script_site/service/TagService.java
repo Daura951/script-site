@@ -24,7 +24,7 @@ public class TagService {
         if (tags.size() == 0) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(tags.stream().map(t -> tagMapper.tagToDto(t)).toList());
+        return ResponseEntity.ok(tags.stream().map(t -> tagMapper.toDto(t)).toList());
     }
 
 }

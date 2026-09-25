@@ -9,9 +9,9 @@ import com.gov.script_site.model.TagDTO;
 @Mapper(componentModel = "spring")
 public abstract class TagMapper {
 
-    public abstract TagDTO tagToDto(Tag tag);
+    public abstract TagDTO toDto(Tag tag);
 
     @Mapping(target = "scripts", ignore = true)
-    public abstract Tag dtoToTag(TagDTO dto);
+    public abstract Tag toEntity(TagDTO dto);
 
 }
