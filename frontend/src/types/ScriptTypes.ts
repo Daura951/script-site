@@ -29,7 +29,7 @@ export const Scripts = PagedResponse(Script);
 export type Scripts = z.infer<typeof Scripts>;
 
 export const SearchDate = z.object({
-  date: z.coerce.date(),
+  date: z.coerce.date().optional(),
   sort: z.string(),
 });
 export type SearchDate = z.infer<typeof SearchDate>;

@@ -1,14 +1,18 @@
 import { useState } from "react";
+import { SearchDate } from "../types/ScriptTypes";
 
 type SearchDateInputProps = {
   label: string;
+  OnChange: (item:SearchDate)=>void;
 };
 
-export default function SearchDateInput({ label }: SearchDateInputProps) {
-  const [ascEnabled, setAscEnabled] = useState(true);
+export default function SearchDateInput({ label, OnChange }: SearchDateInputProps) {
+  const [search, setSearch] = useState<SearchDate>({sort: 'ASC'});
 
   const handleClick = (isAsc: boolean) => {
-    setAscEnabled(isAsc);
+    setSearch({...search, sort: isAsc ? 'ASC' : 'DSC'})
+    OnChange(search)
+    
   };
 
   return (
@@ -18,17 +22,26 @@ export default function SearchDateInput({ label }: SearchDateInputProps) {
         <input
           type="date"
           id="createDate"
-          className="bg-blue-900/40 px-0.5 py-1 text-white/50 [&::-webkit-calendar-picker-indicator]:invert "
+          className="bg-blue-900/40 px-0.5 py-1 text-white/50 [&::-webkit-calendar-picker-indicator]:invert"
+          onChange={(e)=> {
+            const selectedDate = e.target.valueAsDate; 
+            if(selectedDate) 
+            {
+              console.log(selectedDate)
+              setSearch({...search, date: selectedDate})
+              OnChange(search)
+            }
+          }}
         />
         <div>
           <button
-            className={`px-0.5 py-1.5 ${ascEnabled ? "bg-red-600" : "bg-slate-800"} text-sm hover:cursor-pointer`}
+            className={`px-0.5 py-1.5 ${search?.sort === 'ASC' ? "bg-blue-700" : "bg-slate-800"} text-sm hover:cursor-pointer`}
             onClick={() => handleClick(true)}
           >
             ASC
           </button>
           <button
-            className={`px-0.5 py-1.5 ${!ascEnabled ? "bg-blue-600" : "bg-slate-800"} text-sm hover:cursor-pointer`}
+            className={`px-0.5 py-1.5 ${search?.sort === 'DSC' ? "bg-blue-700" : "bg-slate-800"} text-sm hover:cursor-pointer`}
             onClick={() => handleClick(false)}
           >
             DSC

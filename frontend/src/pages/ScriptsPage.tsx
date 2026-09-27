@@ -1,26 +1,35 @@
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import MultiInput from "../components/MultiInput";
 import ScriptPreview from "../components/ScriptPreview";
 import SearchDateInput from "../components/SearchDateInput";
 import { Env } from "../Env";
 import { apiFetch } from "../hooks/ApiClient";
-import { Scripts, ScriptSearch, Tag } from "../types/ScriptTypes";
 import { User } from "../types/LoginTypes";
-import { useState } from "react";
+import { Scripts, ScriptSearch, SearchDate, Tag } from "../types/ScriptTypes";
 
 export default function ScriptsPage() {
-  const tags: Tag[] = [];
-  const users: User[] = [];
-  const [scriptTitle, setScriptTitle] = useState("");
-  const [scriptSearch, setScriptSearch] = useState<ScriptSearch>();
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [users, setUsers] = useState<User[]>([]);
+  const [scriptTitle, setScriptTitle] = useState("")
+  const [createDate, setCreateDate] = useState<SearchDate>({sort: 'ASC'})
+  const [modifyDate, setModifyDate] = useState<SearchDate>({sort: 'ASC'})
+
 
   const scriptsQuery = useQuery({
     queryKey: ["scriptQuery"],
-    queryFn: async (): Promise<Scripts> =>
-      apiFetch(`${Env.API_BASE_URL}/scripts`, {
+    queryFn: async (): Promise<Scripts> =>{
+
+      const search:ScriptSearch = {scriptTitle: scriptTitle, authors: users, tags: tags, createDate: createDate, modifyDate:modifyDate}
+
+      return apiFetch(`${Env.API_BASE_URL}/scripts`, {
+        method: "POST",
+        body: search,
         schema: Scripts,
-      }),
+      })},
   });
+
+
 
   return (
     <div className="pb-10 pt-20 flex flex-col flex-1 text-white items-center  bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
@@ -38,7 +47,7 @@ export default function ScriptsPage() {
           <div className="flex flex-col">
             <label htmlFor="title">Script Title</label>
             <input
-              id="natitleme"
+              id="title"
               type="text"
               className="bg-blue-900/40 outline-none p-2 "
               placeholder="Script Title"
@@ -53,6 +62,7 @@ export default function ScriptsPage() {
               url={`${Env.API_BASE_URL}/tags`}
               schema={Tag}
               values={tags}
+              onChange={(t) => setTags(t)}
               comparator={(tag) => tag.id}
               getLabel={(tag) => tag.tag}
               getType={(tag) => tag.type}
@@ -60,8 +70,8 @@ export default function ScriptsPage() {
           </div>
         </div>
         <div className="flex flex-col md:flex-row gap-5 md:gap-21">
-          <SearchDateInput label="Create Date" />
-          <SearchDateInput label="Modify Date" />
+          <SearchDateInput OnChange={(d) => setCreateDate(d)} label="Create Date" />
+          <SearchDateInput OnChange={(m) => setModifyDate(m)} label="Modify Date" />
         </div>
         <div className="flex flex-col">
           <label htmlFor="usernames">Authors</label>
@@ -70,12 +80,13 @@ export default function ScriptsPage() {
             url={`${Env.API_BASE_URL}/users`}
             schema={User}
             values={users}
+            onChange={(u) => setUsers(u)}
             comparator={(user) => user.id}
             getLabel={(user) => user.username}
             getType={() => ""}
           />
         </div>
-        <button className="mt-4 rounded border border-white/20 p-2 hover:cursor-pointer hover:bg-blue-800">
+        <button className="mt-4 rounded border border-white/20 p-2 hover:cursor-pointer hover:bg-blue-800" onClick={() => scriptsQuery.refetch()}>
           Search
         </button>
       </div>

@@ -7,7 +7,8 @@ type MultiInputProps<T extends z.ZodType> = {
   placeholder: string;
   url: string;
   schema: T;
-  values: z.infer<T>[];
+  values: z.infer<T>[]
+  onChange: (items: z.infer<T>[])=>void;
   comparator: (item: z.infer<T>) => any;
   getLabel: (item: z.infer<T>) => string;
   getType: (item: z.infer<T>) => string;
@@ -18,25 +19,28 @@ export default function MultiInput<T extends z.ZodType>({
   url,
   schema,
   values,
+  onChange,
   comparator,
   getLabel,
   getType,
 }: MultiInputProps<T>) {
   const [input, setInput] = useState("");
-  const [valueList, setValueList] = useState<z.infer<T>[]>(values);
+  const [valueList, setValues] = useState<z.infer<T>[]>(values);
 
   const handleTagSelection = (t: z.infer<T>) => {
     if (!valueList.some((v) => comparator(v) == comparator(t))) {
-      setValueList((prev) => [...prev, t]);
+      setValues((prev) => [...prev, t]);
       setInput("");
+      onChange(values)
     }
   };
 
   const removeTag = (item: z.infer<T>) => {
-    setValueList((prev) => {
+    setValues((prev) => {
       const latestTags = prev.filter((t) => comparator(item) !== comparator(t));
       return latestTags;
     });
+    onChange(values)
   };
 
   return (

@@ -24,4 +24,8 @@ public class ScriptSearchDTO {
         private Instant date;
         private String sort;
     }
+
+    public boolean isEmpty() {
+        return  (scriptTitle == null || scriptTitle.isEmpty()) && (tags == null || tags.isEmpty()) && (authors == null || authors.isEmpty());
+    }
 }
