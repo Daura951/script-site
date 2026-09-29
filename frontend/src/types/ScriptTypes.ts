@@ -17,7 +17,7 @@ export const Script = z.object({
   title: z.string(),
   content: z.string(),
   createDate: z.coerce.date(),
-  modifyDate: z.coerce.date(),
+  modifyDate: z.coerce.date().nullable(),
   approved: z.boolean(),
 });
 export type Script = z.infer<typeof Script>;
@@ -38,7 +38,7 @@ export const ScriptSearch = z.object({
   scriptTitle: z.string(),
   tags: z.array(Tag),
   authors: z.array(User),
-  createDate: SearchDate.optional(),
-  modifyDate: SearchDate.optional(),
+  createDate: SearchDate.nullable(),
+  modifyDate: SearchDate.nullable(),
 });
 export type ScriptSearch = z.infer<typeof ScriptSearch>;

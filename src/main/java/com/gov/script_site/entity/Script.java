@@ -1,6 +1,7 @@
 package com.gov.script_site.entity;
 
 import java.time.Instant;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -66,6 +67,13 @@ public class Script {
         this.tags = new HashSet<>();
         this.approved = false;
         this.createDate = Instant.now();
+    }
+
+    public void addTags(Collection<Tag> tags) {
+        for (Tag t : tags) {
+            this.tags.add(t);
+            t.getScripts().add(this);
+        }
     }
 
     public void addTag(Tag tag) {

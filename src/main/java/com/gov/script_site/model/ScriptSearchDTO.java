@@ -26,6 +26,7 @@ public class ScriptSearchDTO {
     }
 
     public boolean isEmpty() {
-        return  (scriptTitle == null || scriptTitle.isEmpty()) && (tags == null || tags.isEmpty()) && (authors == null || authors.isEmpty());
+        return (scriptTitle == null || scriptTitle.isEmpty()) && (tags == null || tags.isEmpty())
+                && (authors == null || authors.isEmpty()) && (createDate == null) && (modifyDate == null);
     }
 }

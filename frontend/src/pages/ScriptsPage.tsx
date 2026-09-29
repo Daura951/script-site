@@ -11,25 +11,28 @@ import { Scripts, ScriptSearch, SearchDate, Tag } from "../types/ScriptTypes";
 export default function ScriptsPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [scriptTitle, setScriptTitle] = useState("")
-  const [createDate, setCreateDate] = useState<SearchDate>({sort: 'ASC'})
-  const [modifyDate, setModifyDate] = useState<SearchDate>({sort: 'ASC'})
-
+  const [scriptTitle, setScriptTitle] = useState("");
+  const [createDate, setCreateDate] = useState<SearchDate | null>(null);
+  const [modifyDate, setModifyDate] = useState<SearchDate | null>(null);
 
   const scriptsQuery = useQuery({
-    queryKey: ["scriptQuery"],
-    queryFn: async (): Promise<Scripts> =>{
-
-      const search:ScriptSearch = {scriptTitle: scriptTitle, authors: users, tags: tags, createDate: createDate, modifyDate:modifyDate}
+    queryKey: ["scriptsQuery"],
+    queryFn: async (): Promise<Scripts> => {
+      const search: ScriptSearch = {
+        scriptTitle: scriptTitle,
+        authors: users,
+        tags: tags,
+        createDate: createDate,
+        modifyDate: modifyDate,
+      };
 
       return apiFetch(`${Env.API_BASE_URL}/scripts`, {
         method: "POST",
         body: search,
         schema: Scripts,
-      })},
+      });
+    },
   });
-
-
 
   return (
     <div className="pb-10 pt-20 flex flex-col flex-1 text-white items-center  bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
@@ -43,7 +46,7 @@ export default function ScriptsPage() {
       <div className="mt-10 border p-4 rounded-lg flex flex-col gap-4 border-white/20 bg-blue-950 md:w-fit w-xs">
         <h2 className="text-center text-lg md:text-4xl">Search</h2>
 
-        <div className="flex flex-col md:flex-row justify-between gap-5 md:gap-10">
+        <div className="flex flex-col gap-2">
           <div className="flex flex-col">
             <label htmlFor="title">Script Title</label>
             <input
@@ -69,10 +72,6 @@ export default function ScriptsPage() {
             />
           </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-5 md:gap-21">
-          <SearchDateInput OnChange={(d) => setCreateDate(d)} label="Create Date" />
-          <SearchDateInput OnChange={(m) => setModifyDate(m)} label="Modify Date" />
-        </div>
         <div className="flex flex-col">
           <label htmlFor="usernames">Authors</label>
           <MultiInput
@@ -86,19 +85,38 @@ export default function ScriptsPage() {
             getType={() => ""}
           />
         </div>
-        <button className="mt-4 rounded border border-white/20 p-2 hover:cursor-pointer hover:bg-blue-800" onClick={() => scriptsQuery.refetch()}>
+        <div className="flex flex-col md:flex-row gap-5 md:gap-21 justify-between">
+          <SearchDateInput
+            OnChange={(d) => setCreateDate(d)}
+            label="Create Date"
+          />
+          <SearchDateInput
+            OnChange={(m) => setModifyDate(m)}
+            label="Modify Date"
+          />
+        </div>
+        <button
+          className="mt-4 rounded border border-white/20 p-2 hover:cursor-pointer hover:bg-blue-800"
+          onClick={() => scriptsQuery.refetch()}
+        >
           Search
         </button>
       </div>
 
       {!scriptsQuery.isLoading && (
-        <>
-          <div className="mt-10 border p-4 rounded-lg flex flex-col gap-4 border-white/20 bg-blue-950 w-fit truncate">
-            {scriptsQuery.data?.content?.map((script, i) => (
-              <ScriptPreview script={script} key={i} />
-            ))}
-          </div>
-        </>
+        <div className="mt-10 border p-4 rounded-lg flex flex-col gap-4 border-white/20 bg-blue-950 w-fit truncate">
+          {(scriptsQuery.data?.page?.totalElements ?? 0) > 0 ? (
+            <>
+              {scriptsQuery.data?.content?.map((script, i) => (
+                <ScriptPreview script={script} key={i} />
+              ))}
+            </>
+          ) : (
+            <h1 className="text-center text-2xl  w-xs md:w-5xl">
+              No Results found
+            </h1>
+          )}
+        </div>
       )}
     </div>
   );

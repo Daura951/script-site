@@ -65,36 +65,44 @@ export default function Navbar() {
                 onClick={() => navigate("/")}
               />
             </div>
-            <div className="hidden sm:ml-6 sm:block">
-              <button
-                aria-current="page"
-                className="rounded-md bg-purple-975/50 px-3 py-2 text-sm font-medium text-white hover:cursor-pointer"
-                onClick={() => navigate("/")}
-              >
-                Home
-              </button>
-              <button
-                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
-                onClick={() => navigate("/about")}
-              >
-                About
-              </button>
-              <button
-                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
-                onClick={() => navigate("/team")}
-              >
-                Team
-              </button>
-              <button
-                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
-                onClick={() => navigate("/scripts")}
-              >
-                Scripts
-              </button>
+            <div className="hidden sm:ml-6 sm:flex items-end justify-end">
+              <div>
+                <button
+                  aria-current="page"
+                  className="rounded-md bg-purple-975/50 px-3 py-2 text-sm font-medium text-white hover:cursor-pointer"
+                  onClick={() => navigate("/")}
+                >
+                  Home
+                </button>
+                <button
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                  onClick={() => navigate("/about")}
+                >
+                  About
+                </button>
+                <button
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                  onClick={() => navigate("/team")}
+                >
+                  Team
+                </button>
+                <button
+                  className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                  onClick={() => navigate("/scripts")}
+                >
+                  Scripts
+                </button>
+              </div>
             </div>
           </div>
           {username && (
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+              <button
+                className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
+                onClick={() => navigate("/scripts/submit")}
+              >
+                Submit Script
+              </button>
               <button
                 type="button"
                 className="hover:cursor-pointer  relative rounded-full p-1 text-gray-400 hover:text-white focus:outline-2 focus:outline-offset-2 focus:outline-indigo-500"

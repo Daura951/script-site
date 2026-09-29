@@ -11,6 +11,8 @@ import AuthProvider from "./context/AuthProvider";
 import AboutPage from "./pages/AboutPage";
 import TeamPage from "./pages/TeamPage";
 import ScriptsPage from "./pages/ScriptsPage";
+import ScriptPage from "./pages/ScriptPage";
+import ScriptSubmissionPage from "./pages/ScriptSubmissionPage";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +44,14 @@ const router = createBrowserRouter([
       {
         path: "/scripts",
         element: <ScriptsPage />,
+      },
+      {
+        path: "/scripts/:scriptId",
+        element: <ScriptPage />,
+      },
+      {
+        path: "/scripts/submit",
+        element: <ScriptSubmissionPage />,
       },
     ],
   },

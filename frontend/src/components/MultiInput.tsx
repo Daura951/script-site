@@ -7,8 +7,8 @@ type MultiInputProps<T extends z.ZodType> = {
   placeholder: string;
   url: string;
   schema: T;
-  values: z.infer<T>[]
-  onChange: (items: z.infer<T>[])=>void;
+  values: z.infer<T>[];
+  onChange: (items: z.infer<T>[]) => void;
   comparator: (item: z.infer<T>) => any;
   getLabel: (item: z.infer<T>) => string;
   getType: (item: z.infer<T>) => string;
@@ -25,22 +25,23 @@ export default function MultiInput<T extends z.ZodType>({
   getType,
 }: MultiInputProps<T>) {
   const [input, setInput] = useState("");
-  const [valueList, setValues] = useState<z.infer<T>[]>(values);
+  const [valueList, setValueList] = useState<z.infer<T>[]>(values);
 
-  const handleTagSelection = (t: z.infer<T>) => {
+  const handleValueSelection = (t: z.infer<T>) => {
     if (!valueList.some((v) => comparator(v) == comparator(t))) {
-      setValues((prev) => [...prev, t]);
+      const updateValues = [...valueList, t];
+      setValueList(updateValues);
       setInput("");
-      onChange(values)
+      onChange(updateValues);
     }
   };
 
-  const removeTag = (item: z.infer<T>) => {
-    setValues((prev) => {
-      const latestTags = prev.filter((t) => comparator(item) !== comparator(t));
-      return latestTags;
-    });
-    onChange(values)
+  const removeValue = (item: z.infer<T>) => {
+    const updatedValues = valueList.filter(
+      (t) => comparator(item) !== comparator(t),
+    );
+    setValueList(updatedValues);
+    onChange(updatedValues);
   };
 
   return (
@@ -50,7 +51,7 @@ export default function MultiInput<T extends z.ZodType>({
           {valueList.map((tag, i) => (
             <ClosableInputButton
               value={tag}
-              removeItem={() => removeTag(tag)}
+              removeItem={() => removeValue(tag)}
               label={getLabel(tag)}
               valueType={getType(tag)}
               key={i}
@@ -70,7 +71,7 @@ export default function MultiInput<T extends z.ZodType>({
         input={input}
         schema={schema}
         getLabel={getLabel}
-        onSelect={handleTagSelection}
+        onSelect={handleValueSelection}
       />
     </div>
   );

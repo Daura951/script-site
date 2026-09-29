@@ -10,16 +10,16 @@ type ClosableInputButtonProps<T> = {
 };
 
 const colorDictionary: { [id: string]: { bg: string; hoverBg: string } } = {
-  ["VO_GENRE"]: { bg: "bg-red-600", hoverBg: "bg-red-800" },
-  ["ACTING_GENRE"]: { bg: "bg-sky-600", hoverBg: "bg-sky-900" },
-  ["SCRIPT_TYPE"]: { bg: "bg-green-600", hoverBg: "bg-green-800" },
+  ["VO_GENRE"]: { bg: "bg-sky-600", hoverBg: "bg-sky-800" },
+  ["ACTING_GENRE"]: { bg: "bg-green-600", hoverBg: "bg-green-800" },
+  ["SCRIPT_TYPE"]: { bg: "bg-purple-600", hoverBg: "bg-purple-800" },
   [""]: { bg: "bg-blue-600", hoverBg: "bg-blue-800" },
 };
 
 export const InputButton = ({ valueType, label }: InputButtonProps) => {
   return (
     <>
-      <div className="hidden hover:bg-red-800 hover:bg-sky-900 hover:bg-green-800 hover:bg-blue-600" />
+      <div className="hidden hover:bg-sky-800 hover:bg-green-600 hover:bg-green-800 bg-purple-600 hover:bg-purple-800 bg-blue-600 hover:bg-blue-800" />
       <button
         className={`flex ${colorDictionary[valueType].bg} rounded hover:cursor-pointer ${"hover:" + colorDictionary[valueType].hoverBg}`}
       >
