@@ -1,20 +1,19 @@
 import { useMutation } from "@tanstack/react-query";
 import { useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import type { ZodSafeParseResult } from "zod";
 import WritingIcon from "../components/WritingIcon";
-import { apiFetch } from "../hooks/ApiClient";
-import { fileUpload, FileUploadRequest, Script } from "../types/ScriptTypes";
 import { Env } from "../Env";
-import { useNavigate } from "react-router";
+import { fileUpload, FileUploadRequest } from "../types/ScriptTypes";
 
 export default function ScriptSubmissionPage() {
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [fileResult, setFileResult] = useState<ZodSafeParseResult<File> | null>(
-    null,
-  );
+  const fileInputChange = useRef<HTMLInputElement | null>(null);
+  const [fileValidation, setFileValidation] =
+    useState<ZodSafeParseResult<File> | null>(null);
   const nav = useNavigate();
 
-  const scriptMutation = useMutation({
+  const fileUploadMutation = useMutation({
+    mutationKey: ["uploadScriptMutation"],
     mutationFn: async (data: FileUploadRequest) => {
       const formData = new FormData();
       formData.append("title", data.title);
@@ -26,7 +25,7 @@ export default function ScriptSubmissionPage() {
       });
 
       if (!response.ok) {
-        throw new Error("Something went wrong, please try again");
+        throw Error("Something went wrong. Please try again");
       }
 
       const scriptId = await response.text();
@@ -36,10 +35,10 @@ export default function ScriptSubmissionPage() {
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    const result = fileUpload.safeParse(file);
+    const validation = fileUpload.safeParse(file);
 
-    if (!result.success) {
-      setFileResult(result);
+    if (!validation.success) {
+      setFileValidation(validation);
       return;
     }
     if (file) {
@@ -47,7 +46,7 @@ export default function ScriptSubmissionPage() {
         title: file.name,
         script: file,
       };
-      await scriptMutation.mutateAsync(request);
+      await fileUploadMutation.mutateAsync(request);
     }
   };
 
@@ -58,14 +57,14 @@ export default function ScriptSubmissionPage() {
         <input
           type="file"
           className="hidden"
-          ref={fileInputRef}
+          ref={fileInputChange}
           onChange={(e) => handleFileUpload(e)}
         />
 
         <div className="flex justify-between gap-4 mt-4">
           <button
             className="p-4 flex flex-col items-center justify-center gap-2 rounded bg-blue-900  hover:bg-blue-800 hover:cursor-pointer w-full h-75"
-            onClick={() => fileInputRef.current?.click()}
+            onClick={() => fileInputChange.current?.click()}
           >
             <svg
               className="w-10 h-10"
@@ -85,12 +84,10 @@ export default function ScriptSubmissionPage() {
             <p>Write</p>
           </button>
         </div>
-        {fileResult && (
-          <ul className="p-2 ml-4 text-left list-disc">
-            {fileResult.error?.issues.map((issue, i) => (
-              <li key={i} className="text-red-500">
-                {issue.message}
-              </li>
+        {fileValidation && (
+          <ul className="text-red-500 p-2 mt-2 text-left">
+            {fileValidation.error?.issues.map((issue, i) => (
+              <li key={i}>{issue.message}</li>
             ))}
           </ul>
         )}

@@ -13,13 +13,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gov.script_site.entity.Script;
+import com.gov.script_site.entity.Script.ScriptStatus;
 import com.gov.script_site.entity.Tag;
 import com.gov.script_site.entity.User;
-import com.gov.script_site.entity.Script.ScriptStatus;
-import com.gov.script_site.mapper.ScriptMapper;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
 import com.gov.script_site.model.ScriptSearchDTO;
@@ -29,17 +29,23 @@ import com.gov.script_site.repository.ScriptRepository;
 import com.gov.script_site.repository.TagRepository;
 import com.gov.script_site.repository.UserRepository;
 import com.gov.script_site.util.files.FileScriptParser;
+import com.gov.script_site.util.mapper.ScriptMapper;
+
+import jakarta.persistence.EntityNotFoundException;
 
 @Service
 
 public class ScriptService {
     private final ScriptRepository scriptRepository;
+    private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final ScriptMapper scriptMapper;
     private Map<String, FileScriptParser> parserMap;
 
-    public ScriptService(ScriptRepository scriptRepository, TagRepository tagRepository, ScriptMapper scriptMapper,
+    public ScriptService(ScriptRepository scriptRepository, UserRepository userRepository, TagRepository tagRepository,
+            ScriptMapper scriptMapper,
             List<FileScriptParser> parsers) {
+        this.userRepository = userRepository;
         this.scriptRepository = scriptRepository;
         this.tagRepository = tagRepository;
         this.scriptMapper = scriptMapper;
@@ -89,10 +95,13 @@ public class ScriptService {
         return ResponseEntity.ok(scriptMapper.toDto(scriptOpt.get()));
     }
 
+    @Transactional
     public ResponseEntity<String> uploadScript(User user, ScriptFileUploadDto fileUpload) {
 
         MultipartFile scriptFile = fileUpload.getScript();
         Script script = new Script();
+        User userEntity = userRepository.findById(user.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Unable to find user with ID: " + user.getId().toString()));
 
         if (scriptFile == null || scriptFile.isEmpty()) {
             return ResponseEntity.badRequest().body("No file was submitted for script upload");
@@ -106,13 +115,15 @@ public class ScriptService {
             }
             script = parser.parseFile(fileUpload);
             script.setStatus(ScriptStatus.DRAFT);
-
+            script.setTitle(fileUpload.getTitle());
+            script.setAuthor(userEntity);
             if (fileUpload.getTags() != null) {
                 List<Tag> tags = tagRepository.findAllById(fileUpload.getTags());
                 script.addTags(tags);
             }
-            script.setAuthor(user);
-            scriptRepository.save(script);
+
+            System.out.println(script.getTitle());
+            script = scriptRepository.save(script);
 
         } catch (Exception e) {
             e.printStackTrace();

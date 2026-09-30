@@ -6,9 +6,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import com.gov.script_site.entity.Tag;
-import com.gov.script_site.mapper.TagMapper;
 import com.gov.script_site.model.TagDTO;
 import com.gov.script_site.repository.TagRepository;
+import com.gov.script_site.util.mapper.TagMapper;
 
 import lombok.AllArgsConstructor;
 

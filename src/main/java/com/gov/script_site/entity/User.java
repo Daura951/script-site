@@ -45,7 +45,7 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
-    private Set<Script> scripts;
+    private Set<Script> scripts = new HashSet<>();
 
     public User(String username, String email, String password) {
         this.username = username;

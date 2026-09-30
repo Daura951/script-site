@@ -10,15 +10,17 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "scriptImages")
 @AllArgsConstructor
+@NoArgsConstructor
 @Data
 public class ScriptImage {
 
     @Id
-    private UUID id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "script_id")

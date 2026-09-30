@@ -47,25 +47,27 @@ public class PdfFileScriptParser extends FileScriptParser {
             PDPage page = document.getPage(i);
             int pageNum = i + 1;
 
-            Path imageDir = Paths.get(imagePath + fileUpload.getTitle());
+            UUID assetId = UUID.randomUUID();
+            Path imageDir = Paths.get(imagePath + assetId);
 
             if (!Files.exists(imageDir)) {
                 Files.createDirectories(imageDir);
             }
 
+            Long imageTracker = 1L;
             for (COSName resourceName : page.getResources().getXObjectNames()) {
                 if (page.getResources().getXObject(resourceName) instanceof PDImageXObject pdfImage) {
                     BufferedImage image = pdfImage.getImage();
 
-                    UUID imageId = UUID.randomUUID();
-                    String imageName = "script_img_" + UUID.randomUUID() + ".png";
+                    String imageName = "script_img_" + imageTracker + ".png";
                     File outFile = imageDir.resolve(imageName).toFile();
                     ImageIO.write(image, "png", outFile);
 
-                    contentBuilder.append("![Page ").append(pageNum).append(" Image](/images/").append(imageName)
-                            .append(")\n\n");
-
-                    script.addImage(new ScriptImage(imageId, script, imageName));
+                    contentBuilder.append("{img_")
+                            .append(imageTracker)
+                            .append("}\n\n");
+                    script.addImage(new ScriptImage(imageTracker, script, imageName));
+                    imageTracker++;
                 }
             }
 
@@ -73,6 +75,7 @@ public class PdfFileScriptParser extends FileScriptParser {
             markdownPdfTextStripper.setEndPage(pageNum);
             contentBuilder.append(markdownPdfTextStripper.getText(document));
             script.setContent(contentBuilder.toString());
+            script.setAssetId(assetId);
         }
         return script;
     }

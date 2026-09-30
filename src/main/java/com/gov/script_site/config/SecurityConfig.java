@@ -38,7 +38,9 @@ public class SecurityConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http, OAuth2AuthorizedClientService authorizedClientService,
             ClientRegistrationRepository clientRegistrationRepository) throws Exception {
-        http.authorizeHttpRequests(a -> a.anyRequest().permitAll());
+        http.authorizeHttpRequests(
+                a -> a.requestMatchers("/api/scripts/upload", "/scripts/submit").authenticated().anyRequest()
+                        .permitAll());
         http.csrf(csrf -> csrf.disable());
         http.cors(cors -> cors.configurationSource(request -> {
             CorsConfiguration config = new CorsConfiguration();

@@ -13,6 +13,7 @@ import TeamPage from "./pages/TeamPage";
 import ScriptsPage from "./pages/ScriptsPage";
 import ScriptPage from "./pages/ScriptPage";
 import ScriptSubmissionPage from "./pages/ScriptSubmissionPage";
+import ScriptEditPage from "./pages/ScriptEditPage";
 
 const queryClient = new QueryClient();
 
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: "/scripts/submit",
         element: <ScriptSubmissionPage />,
+      },
+      {
+        path: "/scripts/edit/:scriptId",
+        element: <ScriptEditPage />,
       },
     ],
   },

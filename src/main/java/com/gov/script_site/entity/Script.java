@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -48,7 +49,7 @@ public class Script {
     @Lob
     private String content;
 
-    private Instant createDate;
+    private Instant createDate = Instant.now();
 
     private Instant modifyDate;
 
@@ -60,6 +61,8 @@ public class Script {
     @OneToMany(mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude
     private Set<ScriptImage> images = new HashSet<>();
+
+    private UUID assetId;
 
     @Enumerated(EnumType.STRING)
     private ScriptStatus status;

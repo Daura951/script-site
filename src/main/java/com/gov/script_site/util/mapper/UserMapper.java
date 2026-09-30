@@ -1,4 +1,4 @@
-package com.gov.script_site.mapper;
+package com.gov.script_site.util.mapper;
 
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
@@ -23,7 +23,7 @@ public abstract class UserMapper {
     public abstract User toEntity(UserDTO dto);
 
     @AfterMapping
-    protected void applyDiscordEnabled(User user, @MappingTarget UserDTO userDTO) {
+    protected void afterMapping(User user, @MappingTarget UserDTO userDTO) {
         userDTO.setDiscordEnabled(user.getDiscordId() != null && !user.getDiscordId().isEmpty());
         userDTO.setPermissions(user.getAuthorities().stream().map(GrantedAuthority::getAuthority).toList());
     }

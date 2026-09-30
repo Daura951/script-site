@@ -2,6 +2,7 @@ package com.gov.script_site.model;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,5 +19,6 @@ public class ScriptDTO {
     private String content;
     private Instant createDate;
     private Instant modifyDate;
-    private Boolean approved;
+    private String status;
+    private UUID assetId;
 }

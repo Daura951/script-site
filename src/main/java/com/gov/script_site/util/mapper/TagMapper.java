@@ -1,4 +1,4 @@
-package com.gov.script_site.mapper;
+package com.gov.script_site.util.mapper;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

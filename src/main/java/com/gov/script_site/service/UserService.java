@@ -9,10 +9,10 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.gov.script_site.entity.User;
-import com.gov.script_site.mapper.UserMapper;
 import com.gov.script_site.model.SignupDTO;
 import com.gov.script_site.model.UserDTO;
 import com.gov.script_site.repository.UserRepository;
+import com.gov.script_site.util.mapper.UserMapper;
 
 import lombok.AllArgsConstructor;
 
