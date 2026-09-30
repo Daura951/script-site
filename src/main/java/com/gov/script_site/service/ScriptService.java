@@ -1,23 +1,12 @@
 package com.gov.script_site.service;
 
-import java.awt.image.BufferedImage;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
-import javax.imageio.ImageIO;
-
-import org.apache.pdfbox.Loader;
-import org.apache.pdfbox.cos.COSName;
-import org.apache.pdfbox.pdmodel.PDDocument;
-import org.apache.pdfbox.pdmodel.PDPage;
-import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.apache.pdfbox.text.PDFTextStripper;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.gov.script_site.entity.Script;
 import com.gov.script_site.entity.Tag;
 import com.gov.script_site.entity.User;
+import com.gov.script_site.entity.Script.ScriptStatus;
 import com.gov.script_site.mapper.ScriptMapper;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
@@ -38,19 +28,28 @@ import com.gov.script_site.model.UserDTO;
 import com.gov.script_site.repository.ScriptRepository;
 import com.gov.script_site.repository.TagRepository;
 import com.gov.script_site.repository.UserRepository;
-import com.gov.script_site.util.MarkdownPdfTextStripper;
-
-import lombok.AllArgsConstructor;
+import com.gov.script_site.util.files.FileScriptParser;
 
 @Service
-@AllArgsConstructor
-public class ScriptService {
-    private ScriptRepository scriptRepository;
-    private TagRepository tagRepository;
-    private ScriptMapper scriptMapper;
-    private UserRepository userRepository;
 
-    private final String IMAGE_UPLOAD_DIR = "src/main/resources/static/images/";
+public class ScriptService {
+    private final ScriptRepository scriptRepository;
+    private final TagRepository tagRepository;
+    private final ScriptMapper scriptMapper;
+    private Map<String, FileScriptParser> parserMap;
+
+    public ScriptService(ScriptRepository scriptRepository, TagRepository tagRepository, ScriptMapper scriptMapper,
+            List<FileScriptParser> parsers) {
+        this.scriptRepository = scriptRepository;
+        this.tagRepository = tagRepository;
+        this.scriptMapper = scriptMapper;
+        this.parserMap = new HashMap<>();
+
+        for (FileScriptParser p : parsers) {
+            parserMap.put(p.getFileType(), p);
+        }
+
+    }
 
     public Page<ScriptDTO> findScripts(int page, int size, ScriptSearchDTO search) {
 
@@ -90,58 +89,35 @@ public class ScriptService {
         return ResponseEntity.ok(scriptMapper.toDto(scriptOpt.get()));
     }
 
-    public ResponseEntity<String> uploadScript(ScriptFileUploadDto fileUpload) {
+    public ResponseEntity<String> uploadScript(User user, ScriptFileUploadDto fileUpload) {
 
         MultipartFile scriptFile = fileUpload.getScript();
+        Script script = new Script();
 
-        if (scriptFile.isEmpty()) {
-            return ResponseEntity.badRequest().body("The uploaded file is empty.");
+        if (scriptFile == null || scriptFile.isEmpty()) {
+            return ResponseEntity.badRequest().body("No file was submitted for script upload");
         }
 
         try {
-            String fileName = scriptFile.getOriginalFilename();
-            StringBuilder contentBuilder = new StringBuilder();
-
-            if (fileName != null && fileName.endsWith(".pdf")) {
-                PDDocument document = Loader.loadPDF(scriptFile.getBytes());
-                PDFTextStripper stripper = new MarkdownPdfTextStripper();
-
-                Path imagePath = Paths.get(IMAGE_UPLOAD_DIR);
-
-                if (!Files.exists(imagePath)) {
-                    Files.createDirectories(imagePath);
-                }
-
-                for (int i = 0; i < document.getNumberOfPages(); i++) {
-                    int pageNum = i + 1;
-                    PDPage page = document.getPage(i);
-                    for (COSName name : page.getResources().getXObjectNames()) {
-                        if (page.getResources().getXObject(name) instanceof PDImageXObject pdfImage) {
-                            BufferedImage image = pdfImage.getImage();
-                            String imageName = "script_img" + UUID.randomUUID() + ".png";
-                            File outFile = imagePath.resolve(imageName).toFile();
-                            ImageIO.write(image, "png", outFile);
-                            contentBuilder.append("![Page ").append(pageNum).append(" Image](/images/")
-                                    .append(imageName).append(")\n\n");
-                        }
-                    }
-                    stripper.setStartPage(pageNum);
-                    stripper.setEndPage(pageNum);
-                    contentBuilder.append(stripper.getText(document));
-                }
-
-                User testUser = userRepository.findByUsername("user").orElse(null);
-                List<Tag> tags = tagRepository.findAllById(fileUpload.getTags());
-                Script script = new Script(testUser, fileUpload.getTitle(), contentBuilder.toString());
-                script.addTags(tags);
-                scriptRepository.save(script);
-
+            FileScriptParser parser = parserMap.get(scriptFile.getContentType());
+            if (parser == null) {
+                return ResponseEntity.badRequest().body(
+                        "File type of " + scriptFile.getContentType().replace("application/", "") + "is unsupported");
             }
+            script = parser.parseFile(fileUpload);
+            script.setStatus(ScriptStatus.DRAFT);
+
+            if (fileUpload.getTags() != null) {
+                List<Tag> tags = tagRepository.findAllById(fileUpload.getTags());
+                script.addTags(tags);
+            }
+            script.setAuthor(user);
+            scriptRepository.save(script);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().body("Failed to upload file: " + e.getMessage());
         }
-        return new ResponseEntity<>("Success", HttpStatus.CREATED);
+        return new ResponseEntity<>("" + script.getId(), HttpStatus.CREATED);
     }
 }

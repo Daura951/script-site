@@ -7,6 +7,9 @@ import java.util.Set;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumeratedValue;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -15,6 +18,7 @@ import jakarta.persistence.JoinTable;
 import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -25,6 +29,10 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class Script {
+
+    public enum ScriptStatus {
+        DRAFT, AWAITING_REVIEW, APPROVED
+    };
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -47,16 +55,21 @@ public class Script {
     @ManyToMany(cascade = CascadeType.ALL)
     @JoinTable(name = "script_tag_link", joinColumns = @JoinColumn(name = "script_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @EqualsAndHashCode.Exclude
-    private Set<Tag> tags;
+    private Set<Tag> tags = new HashSet<>();
 
-    private Boolean approved;
+    @OneToMany(mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true)
+    @EqualsAndHashCode.Exclude
+    private Set<ScriptImage> images = new HashSet<>();
+
+    @Enumerated(EnumType.STRING)
+    private ScriptStatus status;
 
     public Script(User author, String title, String content, Set<Tag> tags) {
         this.author = author;
         this.title = title;
         this.content = content;
         this.tags = tags;
-        this.approved = false;
+        this.status = ScriptStatus.DRAFT;
         this.createDate = Instant.now();
     }
 
@@ -65,7 +78,7 @@ public class Script {
         this.title = title;
         this.content = content;
         this.tags = new HashSet<>();
-        this.approved = false;
+        this.status = ScriptStatus.APPROVED;
         this.createDate = Instant.now();
     }
 
@@ -76,14 +89,14 @@ public class Script {
         }
     }
 
-    public void addTag(Tag tag) {
-        tags.add(tag);
-        tag.getScripts().add(this);
+    public void addImages(Collection<ScriptImage> images) {
+        for (ScriptImage i : images) {
+            this.images.add(i);
+        }
     }
 
-    public void removeTag(Tag tag) {
-        tags.remove(tag);
-        tag.getScripts().remove(this);
+    public void addImage(ScriptImage image) {
+        this.images.add(image);
     }
 
 }

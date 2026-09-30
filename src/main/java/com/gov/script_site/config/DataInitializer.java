@@ -34,7 +34,7 @@ public class DataInitializer implements CommandLineRunner {
         User user = new User("user", "test@local.com", passwordEncoder.encode("Welcome1"));
 
         Script sampleScript = new Script(user, "Sample Script", "This is a simple sample script");
-        tags.forEach(t -> sampleScript.addTag(t));
+        sampleScript.addTags(tags);
 
         user.addScript(sampleScript);
         user = userRepository.save(user);

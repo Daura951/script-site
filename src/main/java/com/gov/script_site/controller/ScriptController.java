@@ -44,9 +44,9 @@ public class ScriptController {
     }
 
     @PostMapping("/upload")
-    public ResponseEntity<String> uploadScript(
+    public ResponseEntity<String> uploadScript(@AuthenticationPrincipal User user,
             @ModelAttribute ScriptFileUploadDto fileUpload) {
-        return scriptService.uploadScript(fileUpload);
+        return scriptService.uploadScript(user, fileUpload);
     }
 
 }
