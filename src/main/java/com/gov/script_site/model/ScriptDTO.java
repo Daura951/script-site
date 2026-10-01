@@ -21,4 +21,5 @@ public class ScriptDTO {
     private Instant modifyDate;
     private String status;
     private UUID assetId;
+    private List<ScriptImageDTO> images;
 }

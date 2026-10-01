@@ -69,6 +69,8 @@ export default function ScriptsPage() {
               comparator={(tag) => tag.id}
               getLabel={(tag) => tag.tag}
               getType={(tag) => tag.type}
+              bgColor="bg-blue-900/40"
+              inputStyle="outline-none w-full"
             />
           </div>
         </div>
@@ -83,6 +85,8 @@ export default function ScriptsPage() {
             comparator={(user) => user.id}
             getLabel={(user) => user.username}
             getType={() => ""}
+            bgColor="bg-blue-900/40"
+            inputStyle="outline-none w-full"
           />
         </div>
         <div className="flex flex-col md:flex-row gap-5 md:gap-21 justify-between">

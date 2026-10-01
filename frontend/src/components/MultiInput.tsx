@@ -12,6 +12,8 @@ type MultiInputProps<T extends z.ZodType> = {
   comparator: (item: z.infer<T>) => any;
   getLabel: (item: z.infer<T>) => string;
   getType: (item: z.infer<T>) => string;
+  bgColor: string;
+  inputStyle: string;
 };
 
 export default function MultiInput<T extends z.ZodType>({
@@ -23,6 +25,8 @@ export default function MultiInput<T extends z.ZodType>({
   comparator,
   getLabel,
   getType,
+  bgColor,
+  inputStyle,
 }: MultiInputProps<T>) {
   const [input, setInput] = useState("");
   const [valueList, setValueList] = useState<z.infer<T>[]>(values);
@@ -46,8 +50,8 @@ export default function MultiInput<T extends z.ZodType>({
 
   return (
     <div>
-      <div className="bg-blue-900/40 p-2">
-        <div className="flex flex-wrap gap-4 max-w-xl">
+      <div className={`${bgColor} p-2`}>
+        <div className="flex flex-wrap gap-4">
           {valueList.map((tag, i) => (
             <ClosableInputButton
               value={tag}
@@ -62,7 +66,7 @@ export default function MultiInput<T extends z.ZodType>({
             onChange={(e) => setInput(e.target.value)}
             value={input}
             placeholder={placeholder}
-            className="outline-none w-full"
+            className={`${inputStyle}`}
           />
         </div>
       </div>

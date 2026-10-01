@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class ScriptImageDTO {
     private Long id;
+    private Long scriptOrder;
     private Long scriptId;
-    private String path;
+    private String name;
 }

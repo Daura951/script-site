@@ -11,10 +11,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
+import com.gov.script_site.model.ScriptImageDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
 import com.gov.script_site.service.ScriptService;
 
@@ -31,6 +33,11 @@ public class ScriptController {
     @GetMapping("/{id}")
     public ResponseEntity<ScriptDTO> findScriptById(@PathVariable Long id) {
         return scriptService.findScriptById(id);
+    }
+
+    @PostMapping("/{id}/images")
+    public ResponseEntity<ScriptImageDTO> uploadImage(@PathVariable Long id, @RequestBody MultipartFile image) {
+        return scriptService.uploadImage(id, image);
     }
 
     @PostMapping

@@ -5,6 +5,7 @@ import { apiFetch } from "../hooks/ApiClient";
 import { Env } from "../Env";
 import { InputButton } from "../components/MultiInputButtons";
 import ReactMarkdown from "react-markdown";
+import Loader from "../components/Loader";
 
 export default function ScriptPage() {
   const { scriptId } = useParams<{ scriptId: string }>();
@@ -22,14 +23,7 @@ export default function ScriptPage() {
 
   return (
     <div className="pb-10 pt-20  flex justify-center flex-col flex-1 text-white items-center  bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
-      {isLoading && (
-        <div className="flex gap-2">
-          <span className="sr-only">Loading...</span>
-          <div className="bg-white w-8 h-8 rounded-full animate-bounce [animation-delay:-0.3s]" />
-          <div className="bg-white w-8 h-8 rounded-full animate-bounce [animation-delau:-0.15s]" />
-          <div className="bg-white w-8 h-8 rounded-full animate-bounce" />
-        </div>
-      )}
+      {isLoading && <Loader />}
       <div className="bg-blue-950 border rounded-lg border-white/20 w-full max-w-xs md:max-w-5xl">
         <div className="p-2 flex flex-col gap-2 items-start">
           <h1 className="text-2xl font-medium">{script?.title}</h1>

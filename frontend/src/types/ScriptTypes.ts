@@ -10,6 +10,14 @@ export const Tag = z.object({
 });
 export type Tag = z.infer<typeof Tag>;
 
+export const ScriptImage = z.object({
+  id: z.number(),
+  scriptOrder: z.number(),
+  scriptId: z.number(),
+  name: z.string(),
+});
+export type ScriptImage = z.infer<typeof ScriptImage>;
+
 export const Script = z.object({
   id: z.number(),
   author: User,
@@ -19,7 +27,8 @@ export const Script = z.object({
   createDate: z.coerce.date(),
   modifyDate: z.coerce.date().nullable(),
   status: z.string(),
-  assetId: z.string(),
+  assetId: z.string().nullable(),
+  images: z.array(ScriptImage).optional(),
 });
 export type Script = z.infer<typeof Script>;
 
