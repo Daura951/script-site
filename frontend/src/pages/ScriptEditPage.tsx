@@ -1,13 +1,14 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
+import ImageDisplay from "../components/ImageDisplay";
 import Loader from "../components/Loader";
 import MarkdownParser from "../components/MarkdownParser";
 import MultiInput from "../components/MultiInput";
 import { Env } from "../Env";
 import { apiFetch } from "../hooks/ApiClient";
 import { Script, ScriptImage, Tag } from "../types/ScriptTypes";
-import ImageDisplay from "../components/ImageDisplay";
+import ImageCropper from "../components/ImageCropper";
 
 export default function ScriptEditPage() {
   const { scriptId } = useParams<{ scriptId: string }>();
@@ -16,15 +17,22 @@ export default function ScriptEditPage() {
   const [scriptImages, setScriptImages] = useState<ScriptImage[]>([]);
   const [scriptTitle, setScriptTitle] = useState("");
   const [tags, setTags] = useState<Tag[]>([]);
+  const [editImage, setEditImage] = useState<{
+    image: File;
+    scriptImage: ScriptImage | null;
+  } | null>(null);
 
-  const { data: script, isLoading } = useQuery({
+  const {
+    data: script,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["scriptEditQuery", id],
     queryFn: async (): Promise<Script> =>
       apiFetch(`${Env.API_BASE_URL}/scripts/${id}`, {
         method: "GET",
         schema: Script,
       }),
-    staleTime: Infinity,
     gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -32,17 +40,74 @@ export default function ScriptEditPage() {
     refetchInterval: false,
   });
 
+  const imageUploadMutation = useMutation({
+    mutationKey: ["imageUpload", scriptId],
+    mutationFn: async ({
+      image,
+      scriptImage,
+    }: {
+      image: File;
+      scriptImage: ScriptImage | null;
+    }) => {
+      const formData = new FormData();
+      formData.append("imageFile", image);
+      if (scriptImage) {
+        formData.append("imageId", String(scriptImage?.id));
+      }
+
+      const response = await fetch(
+        `${Env.API_BASE_URL}/scripts/${scriptId}/images`,
+        {
+          method: "POST",
+          body: formData,
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Unable to upload image. Please try again");
+      }
+
+      const result = await response.json();
+      const parse = ScriptImage.safeParse(result);
+
+      if (parse.success) {
+        await refetch();
+        setEditImage(null);
+        return parse.data;
+      }
+      throw Error(parse.error.issues[0].message);
+    },
+  });
+
   useEffect(() => {
     if (!script) return;
 
-    setTypedScriptContent(script?.content ?? "");
-    setScriptTitle(script?.title ?? "");
+    if (typedScriptContent.trim() === "") {
+      setTypedScriptContent(script?.content ?? "");
+    }
+
+    if (scriptTitle.trim() === "") {
+      setScriptTitle(script?.title ?? "");
+    }
     setScriptImages(script?.images ?? []);
   }, [script]);
 
   return (
     <div className="pb-10 pt-20  flex justify-center flex-col flex-1 text-white items-center  bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
       {isLoading && <Loader />}
+
+      {editImage && (
+        <ImageCropper
+          imageToEdit={editImage}
+          onCancel={() => {
+            setEditImage(null);
+          }}
+          onCrop={(img) => {
+            imageUploadMutation.mutateAsync(img);
+          }}
+        />
+      )}
+
       {script && (
         <div className="bg-blue-950  pt-2  items-center justify-between rounded flex flex-col">
           <div className="flex">
@@ -90,12 +155,19 @@ export default function ScriptEditPage() {
                 <label>Images</label>
                 <ImageDisplay
                   images={scriptImages}
-                  scriptId={script.id}
                   assetId={script.assetId ?? ""}
+                  OnImageEdit={setEditImage}
                   OnChange={setScriptImages}
+                  OnImageUpload={(image, scriptImage) =>
+                    imageUploadMutation.mutateAsync({ image, scriptImage })
+                  }
                 />
               </div>
             )}
+
+            <button className="bg-blue-500 p-2 rounded w-full hover:cursor-pointer hover:bg-blue-600">
+              Submit
+            </button>
           </div>
         </div>
       )}

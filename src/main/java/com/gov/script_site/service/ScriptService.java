@@ -1,11 +1,6 @@
 package com.gov.script_site.service;
 
-import com.gov.script_site.repository.ScriptImageRepository;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
@@ -15,7 +10,6 @@ import java.util.UUID;
 
 import javax.imageio.ImageIO;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -33,47 +27,43 @@ import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
 import com.gov.script_site.model.ScriptImageDTO;
+import com.gov.script_site.model.ScriptImageFileUploadDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
 import com.gov.script_site.model.TagDTO;
 import com.gov.script_site.model.UserDTO;
 import com.gov.script_site.repository.ScriptRepository;
 import com.gov.script_site.repository.TagRepository;
 import com.gov.script_site.repository.UserRepository;
+import com.gov.script_site.util.ImageUtil;
 import com.gov.script_site.util.files.FileScriptParser;
-import com.gov.script_site.util.mapper.ScriptImageMapper;
 import com.gov.script_site.util.mapper.ScriptMapper;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-
+@Slf4j
 public class ScriptService {
 
-    @Value("${scripts.images.directory}")
-    private String imagePath;
-
+    private final ImageUtil imageUtil;
     private final ScriptRepository scriptRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
     private final ScriptMapper scriptMapper;
-    private final ScriptImageMapper scriptImageMapper;
-    private final ScriptImageRepository scriptImageRepository;
     private Map<String, FileScriptParser> parserMap;
 
     public ScriptService(ScriptRepository scriptRepository, UserRepository userRepository, TagRepository tagRepository,
-            ScriptMapper scriptMapper, List<FileScriptParser> parsers, ScriptImageRepository scriptImageRepository,
-            ScriptImageMapper scriptImageMapper) {
+            ScriptMapper scriptMapper, List<FileScriptParser> parsers, ImageUtil imageUtil) {
         this.userRepository = userRepository;
         this.scriptRepository = scriptRepository;
         this.tagRepository = tagRepository;
         this.scriptMapper = scriptMapper;
-        this.scriptImageRepository = scriptImageRepository;
-        this.scriptImageMapper = scriptImageMapper;
         this.parserMap = new HashMap<>();
 
         for (FileScriptParser p : parsers) {
             parserMap.put(p.getFileType(), p);
         }
+        this.imageUtil = imageUtil;
 
     }
 
@@ -97,11 +87,14 @@ public class ScriptService {
         Instant modDate = search.getCreateDate() == null ? null : search.getCreateDate().getDate();
         String modSort = search.getCreateDate() == null ? null : search.getCreateDate().getSort();
 
+        log.debug("Searching with following params: {}" + search.toString());
+
         List<ScriptDTO> scripts = scriptRepository
                 .searchScripts(title, userIds, tagIds, createDate, createSort, modDate, modSort)
                 .stream()
                 .map(s -> scriptMapper.toDto(s))
                 .toList();
+        log.info("Found {} scripts", scripts.size());
         return new PageImpl<>(scripts, req, scripts.size());
     }
 
@@ -152,32 +145,32 @@ public class ScriptService {
         return new ResponseEntity<>("" + script.getId(), HttpStatus.CREATED);
     }
 
-    public ResponseEntity<ScriptImageDTO> uploadImage(Long id, MultipartFile imageFile) {
+    public ResponseEntity<ScriptImageDTO> uploadImage(Long id, ScriptImageFileUploadDTO upload) {
         Optional<Script> scriptOpt = scriptRepository.findById(id);
-
         if (scriptOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
 
         try {
             Script script = scriptOpt.get();
-            BufferedImage image = ImageIO.read(imageFile.getInputStream());
+            BufferedImage image = ImageIO.read(upload.getImageFile().getInputStream());
 
-            Path imageDir = Paths.get(imagePath + script.getAssetId());
-
-            if (!Files.exists(imageDir)) {
-                Files.createDirectories(imageDir);
+            if (upload.getImageId() != null) {
+                log.info("Updating scriptImage: {}", upload.getImageId());
+                ScriptImage scriptImage = imageUtil.getScriptImage(upload.getImageId());
+                imageUtil.saveImageToDirectory(image, scriptImage.getName(), script.getAssetId());
+                return ResponseEntity.ok(imageUtil.toDto(scriptImage));
+            } else {
+                log.info("Submitting new Image");
+                long order = script.getImages().size() + 1;
+                String imageName = "script_img_" + order + ".png";
+                imageUtil.saveImageToDirectory(image, imageName, script.getAssetId());
+                return new ResponseEntity<ScriptImageDTO>(
+                        imageUtil.toDto(imageUtil
+                                .persistScriptImage(
+                                        new ScriptImage(order, script, imageName))),
+                        HttpStatus.CREATED);
             }
-            long order = script.getImages().size() + 1;
-
-            String imageName = "script_img_" + order + ".png";
-            File outFile = imageDir.resolve(imageName).toFile();
-
-            ImageIO.write(image, "png", outFile);
-            ScriptImage newImage = new ScriptImage(order, script, imageName);
-
-            newImage = scriptImageRepository.save(newImage);
-            return new ResponseEntity<ScriptImageDTO>(scriptImageMapper.toDto(newImage), HttpStatus.CREATED);
 
         } catch (Exception e) {
             e.printStackTrace();

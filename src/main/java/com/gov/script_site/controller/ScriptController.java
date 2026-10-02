@@ -17,6 +17,7 @@ import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
 import com.gov.script_site.model.ScriptImageDTO;
+import com.gov.script_site.model.ScriptImageFileUploadDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
 import com.gov.script_site.service.ScriptService;
 
@@ -36,8 +37,9 @@ public class ScriptController {
     }
 
     @PostMapping("/{id}/images")
-    public ResponseEntity<ScriptImageDTO> uploadImage(@PathVariable Long id, @RequestBody MultipartFile image) {
-        return scriptService.uploadImage(id, image);
+    public ResponseEntity<ScriptImageDTO> uploadImage(@PathVariable Long id,
+            @ModelAttribute ScriptImageFileUploadDTO upload) {
+        return scriptService.uploadImage(id, upload);
     }
 
     @PostMapping

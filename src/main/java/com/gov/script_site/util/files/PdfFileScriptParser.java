@@ -1,36 +1,30 @@
 package com.gov.script_site.util.files;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.UUID;
-
-import javax.imageio.ImageIO;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.gov.script_site.entity.Script;
 import com.gov.script_site.entity.ScriptImage;
 import com.gov.script_site.model.ScriptFileUploadDto;
+import com.gov.script_site.util.ImageUtil;
 import com.gov.script_site.util.MarkdownPdfTextStripper;
 
 @Component
 public class PdfFileScriptParser extends FileScriptParser {
 
-    @Value("${scripts.images.directory}")
-    private String imagePath;
+    private final ImageUtil imageUtil;
 
-    public PdfFileScriptParser() {
+    public PdfFileScriptParser(ImageUtil imageUtil) {
         super("application/pdf");
+        this.imageUtil = imageUtil;
     }
 
     @Override
@@ -48,11 +42,6 @@ public class PdfFileScriptParser extends FileScriptParser {
             int pageNum = i + 1;
 
             UUID assetId = UUID.randomUUID();
-            Path imageDir = Paths.get(imagePath + assetId);
-
-            if (!Files.exists(imageDir)) {
-                Files.createDirectories(imageDir);
-            }
 
             Long imageTracker = 1L;
             for (COSName resourceName : page.getResources().getXObjectNames()) {
@@ -60,8 +49,7 @@ public class PdfFileScriptParser extends FileScriptParser {
                     BufferedImage image = pdfImage.getImage();
 
                     String imageName = "script_img_" + imageTracker + ".png";
-                    File outFile = imageDir.resolve(imageName).toFile();
-                    ImageIO.write(image, "png", outFile);
+                    imageUtil.saveImageToDirectory(image, imageName, assetId);
 
                     contentBuilder.append("{img_")
                             .append(imageTracker)

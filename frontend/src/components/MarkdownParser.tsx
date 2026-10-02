@@ -18,7 +18,7 @@ export default function MarkdownParser({
     const exists = images.some((img) => img.scriptOrder == imageNumber);
 
     return exists
-      ? `![img ${imageNumber} Image](${Env.BASE_URL}/images/${assetId}/script_img_${imageNumber}.png)`
+      ? `![img ${imageNumber} Image](${Env.BASE_URL}/images/${assetId}/script_img_${imageNumber}.png?v=${Date.now()})`
       : match;
   });
   parsed = parsed.replace(/(\r?\n\s*){2,}/g, (match) => {

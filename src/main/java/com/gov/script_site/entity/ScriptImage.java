@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Entity
 @Table(name = "scriptImages")
@@ -29,6 +30,7 @@ public class ScriptImage {
     @ManyToOne
     @JoinColumn(name = "scriptId")
     @EqualsAndHashCode.Exclude
+    @ToString.Exclude
     private Script script;
 
     private String name;
