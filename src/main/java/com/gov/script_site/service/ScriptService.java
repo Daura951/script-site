@@ -27,7 +27,7 @@ import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
 import com.gov.script_site.model.ScriptImageDTO;
-import com.gov.script_site.model.ScriptImageFileUploadDTO;
+import com.gov.script_site.model.ScriptPatchDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
 import com.gov.script_site.model.TagDTO;
 import com.gov.script_site.model.UserDTO;
@@ -145,7 +145,7 @@ public class ScriptService {
         return new ResponseEntity<>("" + script.getId(), HttpStatus.CREATED);
     }
 
-    public ResponseEntity<ScriptImageDTO> uploadImage(Long id, ScriptImageFileUploadDTO upload) {
+    public ResponseEntity<ScriptImageDTO> uploadImage(Long id, MultipartFile upload) {
         Optional<Script> scriptOpt = scriptRepository.findById(id);
         if (scriptOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -153,29 +153,63 @@ public class ScriptService {
 
         try {
             Script script = scriptOpt.get();
-            BufferedImage image = ImageIO.read(upload.getImageFile().getInputStream());
+            BufferedImage image = ImageIO.read(upload.getInputStream());
 
-            if (upload.getImageId() != null) {
-                log.info("Updating scriptImage: {}", upload.getImageId());
-                ScriptImage scriptImage = imageUtil.getScriptImage(upload.getImageId());
-                imageUtil.saveImageToDirectory(image, scriptImage.getName(), script.getAssetId());
-                return ResponseEntity.ok(imageUtil.toDto(scriptImage));
-            } else {
-                log.info("Submitting new Image");
-                long order = script.getImages().size() + 1;
-                String imageName = "script_img_" + order + ".png";
-                imageUtil.saveImageToDirectory(image, imageName, script.getAssetId());
-                return new ResponseEntity<ScriptImageDTO>(
-                        imageUtil.toDto(imageUtil
-                                .persistScriptImage(
-                                        new ScriptImage(order, script, imageName))),
-                        HttpStatus.CREATED);
-            }
+            log.info("Submitting new Image");
+            long order = script.getImages().size() + 1;
+            String imageName = "script_img_" + order + ".png";
+            imageUtil.saveImageToDirectory(image, imageName, script.getAssetId());
+            return new ResponseEntity<ScriptImageDTO>(
+                    imageUtil.toDto(imageUtil
+                            .persistScriptImage(
+                                    new ScriptImage(order, script, imageName))),
+                    HttpStatus.CREATED);
 
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.internalServerError().build();
         }
+    }
+
+    public ResponseEntity<Void> deleteImage(Long imageId) {
+        imageUtil.removeScriptImage(imageId);
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    public ResponseEntity<ScriptDTO> patchScript(Long id, ScriptPatchDTO patchDTO) {
+        Optional<Script> scriptOpt = scriptRepository.findById(id);
+
+        if (scriptOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Script script = scriptOpt.get();
+        script.setTitle(patchDTO.getTitle());
+        script.setContent(patchDTO.getContent());
+
+        List<Tag> newIds = tagRepository
+                .findAllById(script.getTags().stream().filter(t -> !patchDTO.getTags().contains(t.getId()))
+                        .map(Tag::getId).toList());
+        script.addTags(newIds);
+
+        for (ScriptImageDTO dto : patchDTO.getScriptImages()) {
+            ScriptImage img = script.getImages().stream().filter(i -> i.getId() == dto.getId()).findFirst()
+                    .orElse(null);
+
+            if (img != null) {
+                img.setCropPositionX(dto.getCropPositionX());
+                img.setCropPositionY(dto.getCropPositionY());
+                img.setCropWidth(dto.getCropWidth());
+                img.setCropHeight(dto.getCropHeight());
+                img.setZoom(dto.getZoom());
+                img.setCropX(dto.getCropX());
+                img.setCropY(dto.getCropY());
+            }
+        }
+
+        script.setStatus(ScriptStatus.AWAITING_REVIEW);
+        script = scriptRepository.save(script);
+        return ResponseEntity.ok(scriptMapper.toDto(script));
     }
 
 }

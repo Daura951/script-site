@@ -4,13 +4,16 @@ import { Script } from "../types/ScriptTypes";
 import { apiFetch } from "../hooks/ApiClient";
 import { Env } from "../Env";
 import { InputButton } from "../components/MultiInputButtons";
-import ReactMarkdown from "react-markdown";
+import ReactMarkdown, { defaultUrlTransform } from "react-markdown";
 import Loader from "../components/Loader";
+import { useEffect, useState } from "react";
+import MarkdownParser from "../components/MarkdownParser";
 
 export default function ScriptPage() {
   const { scriptId } = useParams<{ scriptId: string }>();
   const id = Number(scriptId);
   const nav = useNavigate();
+  const [parsed, setParse] = useState("");
 
   const { data: script, isLoading } = useQuery({
     queryKey: ["scriptQuery"],
@@ -39,21 +42,11 @@ export default function ScriptPage() {
         </div>
 
         <div className="border-y p-4 border-white/20 text-left my-4">
-          <ReactMarkdown
-            components={{
-              img: ({ node, ...props }) => (
-                <img {...props} className="mb-6 max-w-full  block m-auto" />
-              ),
-              p: ({ node, ...props }) => (
-                <p {...props} className="mb-4 leading-relaxed" />
-              ),
-            }}
-          >
-            {script?.content?.replace(
-              /\]\(\/images\//g,
-              `](${Env.BASE_URL}/images/`,
-            )}
-          </ReactMarkdown>
+          <MarkdownParser
+            assetId={script?.assetId ?? ""}
+            images={script?.images ?? []}
+            markdown={script?.content ?? ""}
+          />
         </div>
         <div className="mb-2 ">
           <div className="flex flex-wrap md:flex-nowrap gap-2 mt-2 p-2">

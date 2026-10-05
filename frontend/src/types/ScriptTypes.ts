@@ -1,4 +1,4 @@
-import z from "zod";
+import z, { number } from "zod";
 import { User } from "./LoginTypes";
 import PagedResponse from "./UtilTypes";
 
@@ -15,6 +15,13 @@ export const ScriptImage = z.object({
   scriptOrder: z.number(),
   scriptId: z.number(),
   name: z.string(),
+  cropX: z.number(),
+  cropPositionX: z.number(),
+  cropPositionY: z.number(),
+  cropY: z.number(),
+  cropWidth: z.number(),
+  cropHeight: z.number(),
+  zoom: z.number(),
 });
 export type ScriptImage = z.infer<typeof ScriptImage>;
 
@@ -31,6 +38,14 @@ export const Script = z.object({
   images: z.array(ScriptImage).optional(),
 });
 export type Script = z.infer<typeof Script>;
+
+export const ScriptSubmission = z.object({
+  title: z.string(),
+  tags: z.array(z.number()),
+  content: z.string(),
+  scriptImages: z.array(ScriptImage).optional,
+});
+export type ScriptSubmission = z.infer<typeof ScriptSubmission>;
 
 export const Tags = PagedResponse(Tag);
 export type Tags = z.infer<typeof Tags>;

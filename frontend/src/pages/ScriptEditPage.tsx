@@ -1,14 +1,21 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
-import { useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
+import ImageCropper from "../components/ImageCropper";
 import ImageDisplay from "../components/ImageDisplay";
 import Loader from "../components/Loader";
 import MarkdownParser from "../components/MarkdownParser";
 import MultiInput from "../components/MultiInput";
+import YesNoModal from "../components/YesNoModal";
 import { Env } from "../Env";
 import { apiFetch } from "../hooks/ApiClient";
-import { Script, ScriptImage, Tag } from "../types/ScriptTypes";
-import ImageCropper from "../components/ImageCropper";
+import {
+  Script,
+  ScriptImage,
+  ScriptSubmission,
+  Tag,
+} from "../types/ScriptTypes";
+import SuccessModal from "../components/SuccessModal";
 
 export default function ScriptEditPage() {
   const { scriptId } = useParams<{ scriptId: string }>();
@@ -17,22 +24,18 @@ export default function ScriptEditPage() {
   const [scriptImages, setScriptImages] = useState<ScriptImage[]>([]);
   const [scriptTitle, setScriptTitle] = useState("");
   const [tags, setTags] = useState<Tag[]>([]);
-  const [editImage, setEditImage] = useState<{
-    image: File;
-    scriptImage: ScriptImage | null;
-  } | null>(null);
+  const [editImage, setEditImage] = useState<ScriptImage | null>(null);
+  const [showSubmitmodal, setShowSubmitModal] = useState(false);
+  const nav = useNavigate();
 
-  const {
-    data: script,
-    isLoading,
-    refetch,
-  } = useQuery({
+  const { data: script, isLoading } = useQuery({
     queryKey: ["scriptEditQuery", id],
     queryFn: async (): Promise<Script> =>
       apiFetch(`${Env.API_BASE_URL}/scripts/${id}`, {
         method: "GET",
         schema: Script,
       }),
+    staleTime: Infinity,
     gcTime: Infinity,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
@@ -42,18 +45,9 @@ export default function ScriptEditPage() {
 
   const imageUploadMutation = useMutation({
     mutationKey: ["imageUpload", scriptId],
-    mutationFn: async ({
-      image,
-      scriptImage,
-    }: {
-      image: File;
-      scriptImage: ScriptImage | null;
-    }) => {
+    mutationFn: async (image: File) => {
       const formData = new FormData();
       formData.append("imageFile", image);
-      if (scriptImage) {
-        formData.append("imageId", String(scriptImage?.id));
-      }
 
       const response = await fetch(
         `${Env.API_BASE_URL}/scripts/${scriptId}/images`,
@@ -71,39 +65,71 @@ export default function ScriptEditPage() {
       const parse = ScriptImage.safeParse(result);
 
       if (parse.success) {
-        await refetch();
-        setEditImage(null);
         return parse.data;
       }
       throw Error(parse.error.issues[0].message);
     },
   });
 
+  const scriptSubmitMutation = useMutation({
+    mutationKey: ["scriptSubmit", scriptId],
+    mutationFn: async (): Promise<Script> => {
+      const scriptSubmission: ScriptSubmission = {
+        title: scriptTitle,
+        tags: tags.map((tag) => tag.id),
+        content: typedScriptContent,
+        scriptImages: scriptImages,
+      };
+      const response = await fetch(`${Env.API_BASE_URL}/scripts/${id}`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify(scriptSubmission),
+      });
+
+      if (!response.ok) {
+        throw new Error("Error has occured");
+      }
+      const result = await response.json();
+      return Script.parse(result);
+    },
+  });
+
   useEffect(() => {
     if (!script) return;
 
-    if (typedScriptContent.trim() === "") {
-      setTypedScriptContent(script?.content ?? "");
-    }
+    setTypedScriptContent(script?.content ?? "");
+    setScriptTitle(script?.title ?? "");
 
-    if (scriptTitle.trim() === "") {
-      setScriptTitle(script?.title ?? "");
+    const images = script.images;
+    if (images !== undefined) {
+      setScriptImages(script.images ?? []);
     }
-    setScriptImages(script?.images ?? []);
   }, [script]);
+
+  const submitScript = async () => {
+    setShowSubmitModal(false);
+    await scriptSubmitMutation.mutateAsync();
+  };
 
   return (
     <div className="pb-10 pt-20  flex justify-center flex-col flex-1 text-white items-center  bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
-      {isLoading && <Loader />}
+      {isLoading && !script && <Loader />}
 
       {editImage && (
         <ImageCropper
           imageToEdit={editImage}
+          assetId={script?.assetId ?? ""}
           onCancel={() => {
             setEditImage(null);
           }}
           onCrop={(img) => {
-            imageUploadMutation.mutateAsync(img);
+            setScriptImages((images) =>
+              images.map((image) => (image.id === img.id ? img : image)),
+            );
+            setEditImage(null);
           }}
         />
       )}
@@ -119,8 +145,8 @@ export default function ScriptEditPage() {
             <div className="p-2 rounded max-w-2xl h-125 overflow-auto whitespace-pre-wrap prose prose-invert">
               <MarkdownParser
                 markdown={typedScriptContent}
-                assetId={script.assetId ?? ""}
                 images={scriptImages}
+                assetId={script.assetId ?? ""}
               />
             </div>
           </div>
@@ -158,18 +184,41 @@ export default function ScriptEditPage() {
                   assetId={script.assetId ?? ""}
                   OnImageEdit={setEditImage}
                   OnChange={setScriptImages}
-                  OnImageUpload={(image, scriptImage) =>
-                    imageUploadMutation.mutateAsync({ image, scriptImage })
+                  OnImageUpload={(image) =>
+                    imageUploadMutation.mutateAsync(image)
                   }
                 />
               </div>
             )}
 
-            <button className="bg-blue-500 p-2 rounded w-full hover:cursor-pointer hover:bg-blue-600">
+            <button
+              className="bg-blue-500 p-2 rounded w-full hover:cursor-pointer hover:bg-blue-600"
+              onClick={() => setShowSubmitModal(true)}
+            >
               Submit
             </button>
           </div>
         </div>
+      )}
+
+      <YesNoModal
+        open={showSubmitmodal}
+        header="Confirm"
+        message="Are you sure you would like to submit this script?"
+        OnNoClick={() => setShowSubmitModal(false)}
+        OnYesClick={submitScript}
+      />
+      {(scriptSubmitMutation.isSuccess || scriptSubmitMutation.isError) && (
+        <SuccessModal
+          okFn={() => nav(`/scripts/${scriptId}`)}
+          isSuccess={scriptSubmitMutation.isSuccess}
+          message={
+            scriptSubmitMutation.isSuccess
+              ? "Script submitted successfully and is awaiting review"
+              : (scriptSubmitMutation.error?.message ??
+                "Failed to submit script")
+          }
+        />
       )}
     </div>
   );

@@ -5,10 +5,7 @@ import type { ScriptImage } from "../types/ScriptTypes";
 type ImageCardProps = {
   image: ScriptImage;
   removeImage: (id: number) => void;
-  onEditClicked: (imageEdit: {
-    image: File;
-    scriptImage: ScriptImage | null;
-  }) => void;
+  onEditClicked: (imageEdit: ScriptImage) => void;
   assetId: string;
 };
 
@@ -21,17 +18,7 @@ export default function ImageCard({
   const [isHovered, setIsHovered] = useState(false);
 
   const handleEditClick = async () => {
-    const response = await fetch(
-      `${Env.BASE_URL}/images/${assetId}/${image.name}`,
-    );
-
-    const blob = await response.blob();
-
-    const file = new File([blob], image.name, {
-      type: blob.type,
-    });
-    console.log(image);
-    onEditClicked({ image: file, scriptImage: image });
+    onEditClicked(image);
   };
 
   return (

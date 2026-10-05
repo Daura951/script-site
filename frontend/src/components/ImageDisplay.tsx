@@ -1,19 +1,14 @@
 import { useRef } from "react";
+import { Env } from "../Env";
 import { ScriptImage } from "../types/ScriptTypes";
 import ImageCard from "./ImageCard";
 
 type ImageDisplayProps = {
   images: ScriptImage[];
   assetId: string;
-  OnImageEdit: (imageEdit: {
-    image: File;
-    scriptImage: ScriptImage | null;
-  }) => void;
+  OnImageEdit: (imageEdit: ScriptImage) => void;
   OnChange: (imgs: ScriptImage[]) => void;
-  OnImageUpload: (
-    img: File,
-    scriptImage: ScriptImage | null,
-  ) => Promise<ScriptImage>;
+  OnImageUpload: (img: File) => Promise<ScriptImage>;
 };
 
 export default function ImageDisplay({
@@ -25,18 +20,31 @@ export default function ImageDisplay({
 }: ImageDisplayProps) {
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  const removeImage = (id: number) => {
-    const newImages = images.filter((img) => img.id !== id);
+  const removeImage = async (id: number) => {
+    let newImages = images;
+    for (const scriptImage of newImages) {
+      if (scriptImage.id === id) {
+        const response = await fetch(
+          `${Env.API_BASE_URL}/scripts/images/${id}`,
+          { method: "DELETE" },
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to delete image");
+        }
+        newImages = newImages.filter((img) => img.id !== id);
+      }
+    }
+
     OnChange(newImages);
   };
 
   const addImage = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const upload = await OnImageUpload(file, null);
-      const newImages = [...images, upload];
-      OnChange(newImages);
-      OnImageEdit({ image: file, scriptImage: upload });
+      const upload = await OnImageUpload(file);
+      OnChange([...images, upload]);
+      OnImageEdit(upload);
     }
   };
 
@@ -47,10 +55,7 @@ export default function ImageDisplay({
           <ImageCard
             image={image}
             removeImage={removeImage}
-            onEditClicked={(edit: {
-              image: File;
-              scriptImage: ScriptImage | null;
-            }) => OnImageEdit(edit)}
+            onEditClicked={OnImageEdit}
             assetId={assetId}
             key={image.id}
           />

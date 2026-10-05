@@ -3,8 +3,10 @@ package com.gov.script_site.controller;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,7 +19,7 @@ import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
 import com.gov.script_site.model.ScriptFileUploadDto;
 import com.gov.script_site.model.ScriptImageDTO;
-import com.gov.script_site.model.ScriptImageFileUploadDTO;
+import com.gov.script_site.model.ScriptPatchDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
 import com.gov.script_site.service.ScriptService;
 
@@ -38,7 +40,7 @@ public class ScriptController {
 
     @PostMapping("/{id}/images")
     public ResponseEntity<ScriptImageDTO> uploadImage(@PathVariable Long id,
-            @ModelAttribute ScriptImageFileUploadDTO upload) {
+            @RequestParam("imageFile") MultipartFile upload) {
         return scriptService.uploadImage(id, upload);
     }
 
@@ -53,6 +55,16 @@ public class ScriptController {
     public ResponseEntity<String> uploadScript(@AuthenticationPrincipal User user,
             @ModelAttribute ScriptFileUploadDto fileUpload) {
         return scriptService.uploadScript(user, fileUpload);
+    }
+
+    @DeleteMapping("/images/{imageId}")
+    public ResponseEntity<Void> deleteImage(@PathVariable Long imageId) {
+        return scriptService.deleteImage(imageId);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<ScriptDTO> updateScript(@PathVariable Long id, @RequestBody ScriptPatchDTO patchDTO) {
+        return scriptService.patchScript(id, patchDTO);
     }
 
 }

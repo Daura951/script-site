@@ -11,10 +11,10 @@ export default function SuccessModal({
 }: SuccessModalProps) {
   return (
     <div className="fixed inset-0 place-items-center grid bg-white/10">
-      <div className="bg-white w-75 md:w-100 border border-blue-400/20 rounded-md">
+      <div className="bg-blue-950 text-blue-500 w-75 md:w-100 border border-blue-400/20 rounded-md">
         <div className="p-4">
           <div className="flex items-start gap-2">
-            <div className="bg-white outline outline-blue-400 rounded-full size-9 flex items-center justify-center">
+            <div className="bg-blue-950 outline outline-blue-400 rounded-full size-9 flex items-center justify-center">
               {isSuccess ? (
                 <svg
                   viewBox="0 0 24 24"
@@ -55,7 +55,7 @@ export default function SuccessModal({
           </div>
           <div className="mt-2 ">{message}</div>
         </div>
-        <div className="bg-blue-400 rounded-b flex items-center justify-center px-6 py-3">
+        <div className="rounded-b text-white flex items-center justify-center px-6 py-3">
           <button
             className="px-3 py-2 bg-white/10 rounded hover:cursor-pointer hover:bg-white/20"
             onClick={okFn}

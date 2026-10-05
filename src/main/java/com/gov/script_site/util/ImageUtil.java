@@ -53,7 +53,17 @@ public class ImageUtil {
                 .orElseThrow(() -> new EntityNotFoundException("Unable to find ScriptImage with ID: " + id));
     }
 
-    public @Nullable ScriptImageDTO toDto(ScriptImage persistScriptImage) {
+    public ScriptImageDTO toDto(ScriptImage persistScriptImage) {
         return scriptImageMapper.toDto(persistScriptImage);
+    }
+
+    public void removeScriptImage(Long imageId) {
+
+        ScriptImage image = getScriptImage(imageId);
+
+        File file = new File(imageDirectory + image.getScript().getAssetId() + "/" + image.getName());
+        file.delete();
+
+        scriptImageRepository.deleteById(imageId);
     }
 }
