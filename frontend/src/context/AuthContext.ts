@@ -3,6 +3,7 @@ import { createContext } from "react";
 export type AuthContextType = {
   id: string | null;
   username: string | null;
+  likedScripts: number[] | null;
   discordEnabled: boolean | null;
   hasAuth: (auth?: string) => boolean;
   isLoading: boolean | null;

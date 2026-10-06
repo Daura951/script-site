@@ -35,7 +35,8 @@ public class ScriptImage {
 
     private String name;
 
-    private Integer cropX, cropY, cropPositionX, cropPositionY, cropWidth, cropHeight, zoom;
+    private Integer cropX, cropY, cropPositionX, cropPositionY, cropWidth, cropHeight;
+    private Double zoom;
 
     public ScriptImage(Long scriptOrder, Script script, String name) {
         this.scriptOrder = scriptOrder;
@@ -45,9 +46,9 @@ public class ScriptImage {
         cropY = 0;
         cropPositionX = 0;
         cropPositionY = 0;
-        zoom = 1;
-        cropWidth = 300;
-        cropHeight = 300;
+        zoom = 1.0;
+        cropWidth = 292;
+        cropHeight = 292;
     }
 
 }

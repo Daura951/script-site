@@ -27,22 +27,20 @@ export default function ScriptPreview({ script }: ScriptPreviewProps) {
           {script.author.username}
         </button>
       </div>
-      <div className="text-white/50 px-2 py-4 border-y border-white/20 truncate">
+      <div className="text-white/50 px-2 py-4 border-y border-white/20">
         <ReactMarkdown
           components={{
-            p: ({ children }) => <p className="inline">{children} </p>,
+            p: ({ children }) => <div className="line-clamp-3">{children}</div>,
           }}
         >
-          {script.content.replace(/!\[Page [0-9]* Image]\(\/images\/.*/, "")}
+          {script.content.replace(/\{img_[1-9]\}+/g, "")}
         </ReactMarkdown>
       </div>
-
       <div className="flex flex-wrap md:flex-nowrap gap-2 mt-2 p-2">
         {script.tags.map((tag, i) => (
           <InputButton valueType={tag.type} label={tag.tag} key={i} />
         ))}
       </div>
-
       <div className="text-slate-400 px-2">
         <p>Created: {new Date(script.createDate).toLocaleDateString()}</p>
         {script.modifyDate && (

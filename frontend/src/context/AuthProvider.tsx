@@ -28,6 +28,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const discordEnabled = user?.discordEnabled ?? null;
   const id = user?.id ?? "";
   const permissions = user?.permissions ?? [];
+  const likedScripts = user?.likedScripts ?? [];
 
   const hasAuth = (auth?: string) => {
     if (!auth) return true;
@@ -52,6 +53,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
       value={{
         id,
         username,
+        likedScripts,
         discordEnabled,
         hasAuth,
         isLoading,

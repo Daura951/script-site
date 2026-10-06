@@ -6,13 +6,10 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
-import com.gov.script_site.model.ScriptPatchDTO;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumeratedValue;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -34,7 +31,7 @@ import lombok.NoArgsConstructor;
 public class Script {
 
     public enum ScriptStatus {
-        DRAFT, AWAITING_REVIEW, APPROVED
+        DRAFT, PENDING_APPROVAL, APPROVED
     };
 
     @Id
@@ -59,6 +56,11 @@ public class Script {
     @JoinTable(name = "script_tag_link", joinColumns = @JoinColumn(name = "script_id"), inverseJoinColumns = @JoinColumn(name = "tag_id"))
     @EqualsAndHashCode.Exclude
     private Set<Tag> tags = new HashSet<>();
+
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "liked_user_script_link", joinColumns = @JoinColumn(name = "script_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @EqualsAndHashCode.Exclude
+    private Set<User> likedByUsers = new HashSet<>();
 
     @OneToMany(mappedBy = "script", cascade = CascadeType.ALL, orphanRemoval = true)
     @EqualsAndHashCode.Exclude

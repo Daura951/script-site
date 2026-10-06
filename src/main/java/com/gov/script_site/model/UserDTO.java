@@ -14,5 +14,6 @@ public class UserDTO {
     private String email;
     private Boolean discordEnabled;
     private List<String> permissions;
+    private List<Long> likedScripts;
 
 }

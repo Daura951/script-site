@@ -1,5 +1,6 @@
 import { useForm } from "@tanstack/react-form";
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
 import { Env } from "../Env";
 import DiscordButton from "../components/DiscordButton";
@@ -10,6 +11,7 @@ import { SignupRequest, User } from "../types/LoginTypes";
 export default function SignupPage() {
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
+  const [showSignupResultModal, setShowSignupResultModal] = useState(false);
   const discordName = searchParams.get("username");
   const discordId = searchParams.get("id");
   const discordEmail = searchParams.get("email");
@@ -21,6 +23,9 @@ export default function SignupPage() {
         body: data,
         schema: User,
       }),
+    onSettled: () => {
+      setShowSignupResultModal(true);
+    },
   });
 
   const form = useForm({
@@ -163,15 +168,16 @@ export default function SignupPage() {
           <DiscordButton type="signup" />
         </div>
 
-        {(signupMutation.isSuccess || signupMutation.isError) && (
+        {showSignupResultModal && (
           <SuccessModal
             isSuccess={signupMutation.isSuccess}
+            onError={() => setShowSignupResultModal(false)}
             message={
               signupMutation.isSuccess
                 ? "Account created successfully!"
                 : (signupMutation.error?.message ?? "Signup failed")
             }
-            okFn={() => nav("/login")}
+            onSuccess={() => nav("/login")}
           />
         )}
       </div>

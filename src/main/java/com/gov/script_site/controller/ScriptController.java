@@ -57,6 +57,11 @@ public class ScriptController {
         return scriptService.uploadScript(user, fileUpload);
     }
 
+    @GetMapping("/{id}/favorite")
+    public ResponseEntity<Void> likeScript(@PathVariable Long id, @AuthenticationPrincipal User user) {
+        return scriptService.likeScript(id, user);
+    }
+
     @DeleteMapping("/images/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long imageId) {
         return scriptService.deleteImage(imageId);

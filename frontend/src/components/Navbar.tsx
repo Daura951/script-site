@@ -96,7 +96,7 @@ export default function Navbar() {
             </div>
           </div>
           {username && (
-            <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
+            <div className="hidden  absolute inset-y-0 right-0 md:flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
               <button
                 className="rounded-md px-3 py-2 text-sm font-medium text-gray-300 hover:bg-white/5 hover:text-white hover:cursor-pointer"
                 onClick={() => navigate("/scripts/submit")}
@@ -140,6 +140,11 @@ export default function Navbar() {
           <button className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">
             Calendar
           </button>
+          {username && (
+            <button className="block rounded-md px-3 py-2 text-base font-medium text-gray-300 hover:bg-white/5 hover:text-white">
+              Submit Script
+            </button>
+          )}
         </div>
       </div>
     </nav>

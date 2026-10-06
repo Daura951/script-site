@@ -23,7 +23,7 @@ export default function ImageCard({
 
   return (
     <div
-      className="w-50 overflow-hidden rounded border border-white/20"
+      className=" w-40 md:w-50 overflow-hidden rounded border border-white/20"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -43,14 +43,24 @@ export default function ImageCard({
           alt={`Character Image ${image.id}`}
           className="w-full h-full object-cover"
         />
-        {isHovered && (
+        <div className="hidden md:block">
+          {isHovered && (
+            <button
+              className="absolute bottom-0 left-0 w-full py-2 bg-blue-600 hover:cursor-pointer hover:bg-blue-700"
+              onClick={() => handleEditClick()}
+            >
+              Edit
+            </button>
+          )}
+        </div>
+        <div className="md:hidden">
           <button
             className="absolute bottom-0 left-0 w-full py-2 bg-blue-600 hover:cursor-pointer hover:bg-blue-700"
             onClick={() => handleEditClick()}
           >
             Edit
           </button>
-        )}
+        </div>
       </div>
     </div>
   );

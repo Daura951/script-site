@@ -37,19 +37,28 @@ export const cropImage = async (
 
   if (!ctx) return;
 
-  canvas.width = croppedAreaPixels.width;
-  canvas.height = croppedAreaPixels.height;
+  canvas.width = 292;
+  canvas.height = 292;
+
+  const sourceWidth = Math.min(
+    croppedAreaPixels.width,
+    imageElement.naturalWidth,
+  );
+  const sourceHeight = Math.min(
+    croppedAreaPixels.height,
+    imageElement.naturalHeight,
+  );
 
   ctx.drawImage(
     imageElement,
-    croppedAreaPixels.x,
-    croppedAreaPixels.y,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height,
+    Math.max(0, croppedAreaPixels.x),
+    Math.max(0, croppedAreaPixels.y),
+    sourceWidth,
+    sourceHeight,
     0,
     0,
-    croppedAreaPixels.width,
-    croppedAreaPixels.height,
+    292,
+    292,
   );
 
   const blob = await new Promise<Blob | null>((resolve) => {

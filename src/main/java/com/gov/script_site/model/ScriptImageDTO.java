@@ -12,5 +12,6 @@ public class ScriptImageDTO {
     private Long scriptOrder;
     private Long scriptId;
     private String name;
-    private Integer cropX, cropY, cropPositionX, cropPositionY, cropWidth, cropHeight, zoom;
+    private Integer cropX, cropY, cropPositionX, cropPositionY, cropWidth, cropHeight;
+    private Double zoom;
 }

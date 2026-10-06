@@ -68,7 +68,7 @@ export default function ImageDisplay({
           onChange={(e) => addImage(e)}
         />
         <button
-          className="w-50 h-50 overflow-hidden rounded border-dashed border-white/20 border hover:bg-blue-900 hover:cursor-pointer"
+          className="w-40 md:w-50 h-40 md:h-50 overflow-hidden rounded border-dashed border-white/20 border hover:bg-blue-900 hover:cursor-pointer"
           onClick={() => inputRef.current?.click()}
         >
           + Image

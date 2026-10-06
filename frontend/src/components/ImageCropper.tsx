@@ -27,7 +27,12 @@ export default function ImageCropper({
     y: imageToEdit.cropPositionY,
   });
   const [zoom, setZoom] = useState(imageToEdit.zoom);
-  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>({
+    x: imageToEdit.cropX,
+    y: imageToEdit.cropY,
+    width: imageToEdit.cropWidth,
+    height: imageToEdit.cropHeight,
+  });
 
   useEffect(() => {
     let imageUrl: string | null = null;
@@ -39,6 +44,7 @@ export default function ImageCropper({
       setEditImage(imageUrl);
     };
     getImage();
+
     return () => {
       if (imageUrl) URL.revokeObjectURL(imageUrl);
     };
@@ -76,11 +82,13 @@ export default function ImageCropper({
             <div className="flex flex-col gap-2">
               <input
                 type="range"
-                min={1}
-                max={3}
+                min={0}
+                max={2}
                 step={0.1}
                 value={zoom}
-                onChange={(e) => setZoom(Number(e.target.value))}
+                onChange={(e) => {
+                  setZoom(Number(e.target.value));
+                }}
                 className="flex-1"
               />
               <div className="justify-end flex gap-2">

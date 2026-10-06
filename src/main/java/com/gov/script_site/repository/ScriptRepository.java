@@ -19,6 +19,7 @@ public interface ScriptRepository extends JpaRepository<Script, Long> {
                 (:authorIds IS NULL OR s.author.id IN :authorIds) AND
                 (:createDate IS NULL OR s.createDate >= :createDate) AND
                 (:modDate IS NULL OR s.modifyDate >= :modDate)
+                AND s.status = 'APPROVED'
                 ORDER BY
                     CASE WHEN (:createSort IS NULL OR :createSort = 'ASC') THEN s.createDate END ASC,
                     CASE WHEN :createSort=  'DESC' THEN s.createDate END DESC,

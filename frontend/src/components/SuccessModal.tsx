@@ -1,13 +1,15 @@
 type SuccessModalProps = {
   isSuccess: boolean;
   message: string;
-  okFn: () => void;
+  onSuccess: () => void;
+  onError: () => void;
 };
 
 export default function SuccessModal({
   isSuccess,
   message,
-  okFn,
+  onSuccess,
+  onError,
 }: SuccessModalProps) {
   return (
     <div className="fixed inset-0 place-items-center grid bg-white/10">
@@ -58,7 +60,7 @@ export default function SuccessModal({
         <div className="rounded-b text-white flex items-center justify-center px-6 py-3">
           <button
             className="px-3 py-2 bg-white/10 rounded hover:cursor-pointer hover:bg-white/20"
-            onClick={okFn}
+            onClick={() => (isSuccess ? onSuccess() : onError())}
           >
             OK
           </button>

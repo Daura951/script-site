@@ -16,6 +16,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.Data;
@@ -47,7 +48,13 @@ public class User implements UserDetails {
     @EqualsAndHashCode.Exclude
     private Set<Script> scripts = new HashSet<>();
 
-    public User(String username, String email, String password) {
+    @ManyToMany(mappedBy = "likedByUsers")
+    @EqualsAndHashCode.Exclude
+    private Set<Script> likedScripts = new HashSet<>();
+
+    public User(
+            String username, String email,
+            String password) {
         this.username = username;
         this.email = email;
         this.password = password;

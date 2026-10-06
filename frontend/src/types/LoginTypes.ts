@@ -20,5 +20,6 @@ export const User = z.object({
   email: z.email(),
   discordEnabled: z.boolean(),
   permissions: z.array(z.string()),
+  likedScripts: z.array(z.number()),
 });
 export type User = z.infer<typeof User>;

@@ -71,7 +71,9 @@ public class ScriptService {
 
         PageRequest req = PageRequest.of(page, size);
         if (search == null || search.isEmpty()) {
-            List<ScriptDTO> scripts = scriptRepository.findAll().stream().map(s -> scriptMapper.toDto(s)).toList();
+            List<ScriptDTO> scripts = scriptRepository.findAll().stream()
+                    .filter(s -> s.getStatus() == ScriptStatus.APPROVED)
+                    .map(s -> scriptMapper.toDto(s)).toList();
             return new PageImpl<>(scripts, req, scripts.size());
         }
         String title = search.getScriptTitle();
@@ -135,7 +137,6 @@ public class ScriptService {
                 script.addTags(tags);
             }
 
-            System.out.println(script.getTitle());
             script = scriptRepository.save(script);
 
         } catch (Exception e) {
@@ -187,10 +188,11 @@ public class ScriptService {
         script.setTitle(patchDTO.getTitle());
         script.setContent(patchDTO.getContent());
 
-        List<Tag> newIds = tagRepository
-                .findAllById(script.getTags().stream().filter(t -> !patchDTO.getTags().contains(t.getId()))
-                        .map(Tag::getId).toList());
-        script.addTags(newIds);
+        List<Long> scriptTags = script.getTags().stream().map(Tag::getId).toList();
+        List<Tag> newTags = tagRepository
+                .findAllById(patchDTO.getTags().stream().filter(t -> !scriptTags.contains(t))
+                        .toList());
+        script.addTags(newTags);
 
         for (ScriptImageDTO dto : patchDTO.getScriptImages()) {
             ScriptImage img = script.getImages().stream().filter(i -> i.getId() == dto.getId()).findFirst()
@@ -207,9 +209,29 @@ public class ScriptService {
             }
         }
 
-        script.setStatus(ScriptStatus.AWAITING_REVIEW);
+        script.setStatus(ScriptStatus.PENDING_APPROVAL);
         script = scriptRepository.save(script);
         return ResponseEntity.ok(scriptMapper.toDto(script));
+    }
+
+    public ResponseEntity<Void> likeScript(Long id, User user) {
+        Optional<Script> scriptOpt = scriptRepository.findById(id);
+        User userEntity = userRepository.findById(user.getId()).orElseThrow(
+                () -> new EntityNotFoundException("Unable to find user with ID: " + user.getId().toString()));
+
+        if (scriptOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Script script = scriptOpt.get();
+
+        if (userEntity.getLikedScripts().contains(script)) {
+            userEntity.getLikedScripts().remove(script);
+        } else {
+            userEntity.getLikedScripts().add(script);
+        }
+        userRepository.save(userEntity);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 }

@@ -26,7 +26,10 @@ export default function ScriptEditPage() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [editImage, setEditImage] = useState<ScriptImage | null>(null);
   const [showSubmitmodal, setShowSubmitModal] = useState(false);
+  const [showScriptResultModal, setShowScriptResultModal] = useState(false);
   const nav = useNavigate();
+
+  const [activeTab, setActiveTab] = useState<"edit" | "preview">("edit");
 
   const { data: script, isLoading } = useQuery({
     queryKey: ["scriptEditQuery", id],
@@ -95,6 +98,9 @@ export default function ScriptEditPage() {
       const result = await response.json();
       return Script.parse(result);
     },
+    onSettled: () => {
+      setShowScriptResultModal(true);
+    },
   });
 
   useEffect(() => {
@@ -105,7 +111,10 @@ export default function ScriptEditPage() {
 
     const images = script.images;
     if (images !== undefined) {
-      setScriptImages(script.images ?? []);
+      const sortedImages = script.images?.sort(
+        (a, b) => a.scriptOrder - b.scriptOrder,
+      );
+      setScriptImages(sortedImages ?? []);
     }
   }, [script]);
 
@@ -117,6 +126,22 @@ export default function ScriptEditPage() {
   return (
     <div className="pb-10 pt-20  flex justify-center flex-col flex-1 text-white items-center  bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
       {isLoading && !script && <Loader />}
+
+      <div className="flex md:hidden  bg-blue-900 rounded-t  w-full">
+        <button
+          onClick={() => setActiveTab("edit")}
+          className={`flex-1 py-2 text-sm rounded-t ${activeTab === "edit" ? "bg-blue-600 font-semibold" : "text-white/70"}`}
+        >
+          Edit
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("preview")}
+          className={`flex-1 py-2 text-sm rounded-t ${activeTab === "preview" ? "bg-blue-600 font-semibold" : "text-white/70"}`}
+        >
+          Preview
+        </button>
+      </div>
 
       {editImage && (
         <ImageCropper
@@ -135,23 +160,31 @@ export default function ScriptEditPage() {
       )}
 
       {script && (
-        <div className="bg-blue-950  pt-2  items-center justify-between rounded flex flex-col">
-          <div className="flex">
-            <textarea
-              className="bg-white p-2 rounded text-black w-2xl h-125"
-              value={typedScriptContent}
-              onChange={(e) => setTypedScriptContent(e.target.value)}
-            />
-            <div className="p-2 rounded max-w-2xl h-125 overflow-auto whitespace-pre-wrap prose prose-invert">
-              <MarkdownParser
-                markdown={typedScriptContent}
-                images={scriptImages}
-                assetId={script.assetId ?? ""}
+        <div className="bg-blue-950 items-center justify-between rounded flex flex-col">
+          <div className="flex flex-col md:flex-row">
+            <div
+              className={`${activeTab === "preview" ? "hidden md:block" : "block"}`}
+            >
+              <textarea
+                className="bg-white p-3 md:rounded-t text-black w-screen md:w-2xl h-80 md:h-125"
+                value={typedScriptContent}
+                onChange={(e) => setTypedScriptContent(e.target.value)}
               />
+            </div>
+            <div
+              className={`${activeTab === "edit" ? "hidden md:block" : "block"}`}
+            >
+              <div className="bg-blue-900/40 md:border border-white/10 p-3 md:rounded-t w-full md:w-2xl h-80 md:h-125 overflow-auto ">
+                <MarkdownParser
+                  markdown={typedScriptContent}
+                  images={scriptImages}
+                  assetId={script.assetId ?? ""}
+                />
+              </div>
             </div>
           </div>
 
-          <div className="p-2 w-full border-t border-white/20 flex flex-col gap-4">
+          <div className="p-2 w-full  border-white/20 flex flex-col gap-4">
             <div className="flex flex-col">
               <label htmlFor="title">Title</label>
               <input
@@ -159,6 +192,7 @@ export default function ScriptEditPage() {
                 value={scriptTitle}
                 placeholder="Title"
                 className="bg-white rounded text-black px-2"
+                onChange={(e) => setScriptTitle(e.target.value)}
               />
             </div>
             <div className="flex flex-col">
@@ -208,9 +242,10 @@ export default function ScriptEditPage() {
         OnNoClick={() => setShowSubmitModal(false)}
         OnYesClick={submitScript}
       />
-      {(scriptSubmitMutation.isSuccess || scriptSubmitMutation.isError) && (
+      {showScriptResultModal && (
         <SuccessModal
-          okFn={() => nav(`/scripts/${scriptId}`)}
+          onSuccess={() => nav(`/scripts/${scriptId}`)}
+          onError={() => setShowScriptResultModal(false)}
           isSuccess={scriptSubmitMutation.isSuccess}
           message={
             scriptSubmitMutation.isSuccess
