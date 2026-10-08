@@ -1,7 +1,6 @@
 package com.gov.script_site.util.files;
 
 import java.awt.image.BufferedImage;
-import java.util.UUID;
 
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.cos.COSName;
@@ -13,7 +12,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.gov.script_site.entity.Script;
 import com.gov.script_site.entity.ScriptImage;
-import com.gov.script_site.model.ScriptFileUploadDto;
+import com.gov.script_site.model.ScriptCreateDTO;
 import com.gov.script_site.util.ImageUtil;
 import com.gov.script_site.util.MarkdownPdfTextStripper;
 
@@ -28,9 +27,8 @@ public class PdfFileScriptParser extends FileScriptParser {
     }
 
     @Override
-    public Script parseFile(ScriptFileUploadDto fileUpload) throws Exception {
+    public void parseFile(ScriptCreateDTO fileUpload, Script script) throws Exception {
 
-        Script script = new Script();
         MultipartFile file = fileUpload.getScript();
 
         StringBuilder contentBuilder = new StringBuilder();
@@ -41,15 +39,13 @@ public class PdfFileScriptParser extends FileScriptParser {
             PDPage page = document.getPage(i);
             int pageNum = i + 1;
 
-            UUID assetId = UUID.randomUUID();
-
             Long imageTracker = 1L;
             for (COSName resourceName : page.getResources().getXObjectNames()) {
                 if (page.getResources().getXObject(resourceName) instanceof PDImageXObject pdfImage) {
                     BufferedImage image = pdfImage.getImage();
 
                     String imageName = "script_img_" + imageTracker + ".png";
-                    imageUtil.saveImageToDirectory(image, imageName, assetId);
+                    imageUtil.saveImageToDirectory(image, imageName, script.getAssetId());
 
                     contentBuilder.append("{img_")
                             .append(imageTracker)
@@ -63,9 +59,7 @@ public class PdfFileScriptParser extends FileScriptParser {
             markdownPdfTextStripper.setEndPage(pageNum);
             contentBuilder.append(markdownPdfTextStripper.getText(document));
             script.setContent(contentBuilder.toString());
-            script.setAssetId(assetId);
         }
-        return script;
     }
 
 }

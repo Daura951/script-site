@@ -3,8 +3,10 @@ import { useMutation } from "@tanstack/react-query";
 import DiscordButton from "../components/DiscordButton";
 import { Env } from "../Env";
 import { LoginRequest } from "../types/LoginTypes";
+import { useNavigate } from "react-router";
 
 export default function LoginPage() {
+  const nav = useNavigate();
   const loginMutation = useMutation({
     mutationFn: async (data: LoginRequest) => {
       const formData = new URLSearchParams();
@@ -41,7 +43,7 @@ export default function LoginPage() {
 
   return (
     <div className="pt-4 flex flex-column flex-1 items-center justify-center bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
-      <div className="mt-16 flex flex-col gap-5 border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
+      <div className="mt-16 flex flex-col gap-2 border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
         <header>
           <h1 className="text-4xl">Login</h1>
         </header>
@@ -123,6 +125,15 @@ export default function LoginPage() {
             <hr className="grow" />
           </div>
           <DiscordButton type="login" />
+        </div>
+        <div className="text-center mt-2">
+          Dont have an account?{" "}
+          <span
+            className="underline hover:text-blue-500 hover:cursor-pointer"
+            onClick={() => nav("/signup")}
+          >
+            Signup now
+          </span>
         </div>
       </div>
     </div>

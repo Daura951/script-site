@@ -57,8 +57,7 @@ public class Script {
     @EqualsAndHashCode.Exclude
     private Set<Tag> tags = new HashSet<>();
 
-    @ManyToMany(cascade = CascadeType.ALL)
-    @JoinTable(name = "liked_user_script_link", joinColumns = @JoinColumn(name = "script_id"), inverseJoinColumns = @JoinColumn(name = "user_id"))
+    @ManyToMany(mappedBy = "likedScripts")
     @EqualsAndHashCode.Exclude
     private Set<User> likedByUsers = new HashSet<>();
 

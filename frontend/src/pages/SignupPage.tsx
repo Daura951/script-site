@@ -47,7 +47,7 @@ export default function SignupPage() {
 
   return (
     <div className="pt-4 flex-1 flex flex-col  items-center justify-center bg-[#0f172a] bg-[radial-gradient(circle_600px_at_50%_50%,rgba(59,130,246,0.3),transparent)]">
-      <div className="mt-16 flex flex-col gap-5 border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
+      <div className="mt-16 flex flex-col gap-2 border p-4 rounded border-slate-400/20 shadow-lg bg-white mb-5 md:mb-0">
         <header>
           <h1 className="text-4xl">Sign up!</h1>
         </header>
@@ -166,6 +166,16 @@ export default function SignupPage() {
             <hr className="grow" />
           </div>
           <DiscordButton type="signup" />
+        </div>
+
+        <div className="text-center mt-2">
+          Already have an account?{" "}
+          <span
+            className="underline hover:text-blue-500 hover:cursor-pointer"
+            onClick={() => nav("/login")}
+          >
+            Login now
+          </span>
         </div>
 
         {showSignupResultModal && (

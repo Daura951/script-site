@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ScriptFileUploadDto {
+public class ScriptCreateDTO {
     private String title;
     private MultipartFile script;
     private List<Long> tags;

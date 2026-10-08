@@ -1,5 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
-import { useContext, useState } from "react";
+import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
+import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useContext } from "react";
 import { useNavigate, useParams } from "react-router";
 import { Env } from "../Env";
 import Loader from "../components/Loader";
@@ -8,8 +10,6 @@ import { InputButton } from "../components/MultiInputButtons";
 import { AuthContext, type AuthContextType } from "../context/AuthContext";
 import { apiFetch } from "../hooks/ApiClient";
 import { Script } from "../types/ScriptTypes";
-import { HeartIcon as HeartOutline } from "@heroicons/react/24/outline";
-import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 
 export default function ScriptPage() {
   const { scriptId } = useParams<{ scriptId: string }>();
@@ -18,10 +18,12 @@ export default function ScriptPage() {
   const { username, likedScripts } = authContext as AuthContextType;
   const nav = useNavigate();
 
-  const [liked, setLiked] = useState(likedScripts?.includes(id));
+  const liked = likedScripts?.includes(id);
+
+  const queryClient = useQueryClient();
 
   const { data: script, isLoading } = useQuery({
-    queryKey: ["scriptQuery"],
+    queryKey: ["scriptQuery", id],
     queryFn: async (): Promise<Script> =>
       apiFetch(`${Env.API_BASE_URL}/scripts/${id}`, {
         method: "GET",
@@ -30,13 +32,14 @@ export default function ScriptPage() {
   });
 
   const onLikeClick = async () => {
+    if (!username) nav("/login");
     const response = await fetch(`${Env.API_BASE_URL}/scripts/${id}/favorite`);
 
     if (!response.ok) {
       throw new Error("Error has occured");
     }
 
-    setLiked((prev) => !prev);
+    await queryClient.invalidateQueries({ queryKey: ["userAuthQuery"] });
   };
 
   return (
@@ -99,11 +102,26 @@ export default function ScriptPage() {
                 </p>
               )}
             </div>
-            {liked ? (
-              <HeartSolid className="size-5" onClick={() => onLikeClick} />
-            ) : (
-              <HeartOutline className="size-5" onClick={() => onLikeClick} />
-            )}
+            <div className="relative group">
+              {liked && username ? (
+                <HeartSolid
+                  className="size-5 hover:cursor-pointer"
+                  onClick={onLikeClick}
+                />
+              ) : (
+                <HeartOutline
+                  className={`size-5 ${!username && "text-white/20"} hover:cursor-pointer`}
+                  onClick={onLikeClick}
+                />
+              )}
+              {!username && (
+                <div className="text-xs absolute bottom-full left-1/2 mb-2 -translate-x-1/2 z-10 whitespace-nowrap rounded-md bg-blue-950 border px-1.5 py-1 border-white/20 group-hover:block hidden">
+                  Log in to favorite
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 border-[3px] border-transparent border-t-white/20" />{" "}
+                  <div className="absolute left-1/2 top-full -translate-x-1/2 -mt-px border-[3px] border-transparent border-t-blue-950" />
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

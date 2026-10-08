@@ -16,6 +16,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
 import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -48,7 +50,8 @@ public class User implements UserDetails {
     @EqualsAndHashCode.Exclude
     private Set<Script> scripts = new HashSet<>();
 
-    @ManyToMany(mappedBy = "likedByUsers")
+    @ManyToMany(cascade = CascadeType.ALL)
+    @JoinTable(name = "liked_user_script_link", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "scriptId"))
     @EqualsAndHashCode.Exclude
     private Set<Script> likedScripts = new HashSet<>();
 

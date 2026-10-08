@@ -17,21 +17,22 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
-import com.gov.script_site.model.ScriptFileUploadDto;
+import com.gov.script_site.model.ScriptCreateDTO;
 import com.gov.script_site.model.ScriptImageDTO;
 import com.gov.script_site.model.ScriptPatchDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
+import com.gov.script_site.service.ScriptImageService;
 import com.gov.script_site.service.ScriptService;
+
+import lombok.AllArgsConstructor;
 
 @RestController
 @RequestMapping("/api/scripts")
+@AllArgsConstructor
 public class ScriptController {
 
-    private final ScriptService scriptService;
-
-    ScriptController(ScriptService scriptService) {
-        this.scriptService = scriptService;
-    }
+    private ScriptService scriptService;
+    private ScriptImageService scriptImageService;
 
     @GetMapping("/{id}")
     public ResponseEntity<ScriptDTO> findScriptById(@PathVariable Long id) {
@@ -41,7 +42,7 @@ public class ScriptController {
     @PostMapping("/{id}/images")
     public ResponseEntity<ScriptImageDTO> uploadImage(@PathVariable Long id,
             @RequestParam("imageFile") MultipartFile upload) {
-        return scriptService.uploadImage(id, upload);
+        return scriptImageService.uploadImage(scriptService.getScript(id), upload);
     }
 
     @PostMapping
@@ -51,10 +52,10 @@ public class ScriptController {
         return scriptService.findScripts(page, size, search);
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadScript(@AuthenticationPrincipal User user,
-            @ModelAttribute ScriptFileUploadDto fileUpload) {
-        return scriptService.uploadScript(user, fileUpload);
+    @PostMapping("/new")
+    public ResponseEntity<String> createScript(@AuthenticationPrincipal User user,
+            @ModelAttribute ScriptCreateDTO fileUpload) {
+        return scriptService.createScript(user, fileUpload);
     }
 
     @GetMapping("/{id}/favorite")
@@ -64,7 +65,7 @@ public class ScriptController {
 
     @DeleteMapping("/images/{imageId}")
     public ResponseEntity<Void> deleteImage(@PathVariable Long imageId) {
-        return scriptService.deleteImage(imageId);
+        return scriptImageService.deleteImage(imageId);
     }
 
     @PatchMapping("/{id}")

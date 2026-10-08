@@ -4,7 +4,7 @@ import { useNavigate } from "react-router";
 import type { ZodSafeParseResult } from "zod";
 import WritingIcon from "../components/WritingIcon";
 import { Env } from "../Env";
-import { fileUpload, FileUploadRequest } from "../types/ScriptTypes";
+import { fileUpload, CreateScriptRequest } from "../types/ScriptTypes";
 
 export default function ScriptSubmissionPage() {
   const fileInputChange = useRef<HTMLInputElement | null>(null);
@@ -12,14 +12,17 @@ export default function ScriptSubmissionPage() {
     useState<ZodSafeParseResult<File> | null>(null);
   const nav = useNavigate();
 
-  const fileUploadMutation = useMutation({
-    mutationKey: ["uploadScriptMutation"],
-    mutationFn: async (data: FileUploadRequest) => {
+  const newScriptMutation = useMutation({
+    mutationKey: ["newScriptMutation"],
+    mutationFn: async (data: CreateScriptRequest) => {
       const formData = new FormData();
       formData.append("title", data.title);
-      formData.append("script", data.script);
 
-      const response = await fetch(`${Env.API_BASE_URL}/scripts/upload`, {
+      if (data.script) {
+        formData.append("script", data.script);
+      }
+
+      const response = await fetch(`${Env.API_BASE_URL}/scripts/new`, {
         method: "POST",
         body: formData,
       });
@@ -42,12 +45,19 @@ export default function ScriptSubmissionPage() {
       return;
     }
     if (file) {
-      const request: FileUploadRequest = {
+      const request: CreateScriptRequest = {
         title: file.name,
         script: file,
       };
-      await fileUploadMutation.mutateAsync(request);
+      await newScriptMutation.mutateAsync(request);
     }
+  };
+
+  const handleWriteButton = async () => {
+    const request: CreateScriptRequest = {
+      title: "",
+    };
+    await newScriptMutation.mutateAsync(request);
   };
 
   return (
@@ -79,7 +89,10 @@ export default function ScriptSubmissionPage() {
             <p>Upload</p>
           </button>
 
-          <button className="p-4 flex flex-col justify-center items-center  gap-2 rounded bg-blue-900  hover:bg-blue-800 hover:cursor-pointer w-full">
+          <button
+            className="p-4 flex flex-col justify-center items-center  gap-2 rounded bg-blue-900  hover:bg-blue-800 hover:cursor-pointer w-full"
+            onClick={handleWriteButton}
+          >
             <WritingIcon className="w-10 h-10" />
             <p>Write</p>
           </button>

@@ -29,8 +29,8 @@ export const Script = z.object({
   id: z.number(),
   author: User,
   tags: z.array(Tag),
-  title: z.string(),
-  content: z.string(),
+  title: z.string().nullable(),
+  content: z.string().nullable(),
   createDate: z.coerce.date(),
   modifyDate: z.coerce.date().nullable(),
   status: z.string(),
@@ -73,9 +73,9 @@ export const fileUpload = z
   .max(5_000_000, "Uploaded files must be smaller than 5MB")
   .mime("application/pdf", "Uploaded files must be a PDF");
 
-export const FileUploadRequest = z.object({
+export const CreateScriptRequest = z.object({
   title: z.string(),
-  script: fileUpload,
+  script: fileUpload.optional(),
   tags: z.array(Tag).optional(),
 });
-export type FileUploadRequest = z.infer<typeof FileUploadRequest>;
+export type CreateScriptRequest = z.infer<typeof CreateScriptRequest>;

@@ -14,6 +14,7 @@ import ScriptsPage from "./pages/ScriptsPage";
 import ScriptPage from "./pages/ScriptPage";
 import ScriptSubmissionPage from "./pages/ScriptSubmissionPage";
 import ScriptEditPage from "./pages/ScriptEditPage";
+import UserPage from "./pages/UserPage";
 
 const queryClient = new QueryClient();
 
@@ -57,6 +58,10 @@ const router = createBrowserRouter([
       {
         path: "/scripts/edit/:scriptId",
         element: <ScriptEditPage />,
+      },
+      {
+        path: "/users/:userId",
+        element: <UserPage />,
       },
     ],
   },

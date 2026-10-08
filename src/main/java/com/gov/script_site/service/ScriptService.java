@@ -1,14 +1,10 @@
 package com.gov.script_site.service;
 
-import java.awt.image.BufferedImage;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.UUID;
-
-import javax.imageio.ImageIO;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -25,7 +21,7 @@ import com.gov.script_site.entity.ScriptImage;
 import com.gov.script_site.entity.Tag;
 import com.gov.script_site.entity.User;
 import com.gov.script_site.model.ScriptDTO;
-import com.gov.script_site.model.ScriptFileUploadDto;
+import com.gov.script_site.model.ScriptCreateDTO;
 import com.gov.script_site.model.ScriptImageDTO;
 import com.gov.script_site.model.ScriptPatchDTO;
 import com.gov.script_site.model.ScriptSearchDTO;
@@ -34,7 +30,6 @@ import com.gov.script_site.model.UserDTO;
 import com.gov.script_site.repository.ScriptRepository;
 import com.gov.script_site.repository.TagRepository;
 import com.gov.script_site.repository.UserRepository;
-import com.gov.script_site.util.ImageUtil;
 import com.gov.script_site.util.files.FileScriptParser;
 import com.gov.script_site.util.mapper.ScriptMapper;
 
@@ -45,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ScriptService {
 
-    private final ImageUtil imageUtil;
     private final ScriptRepository scriptRepository;
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
@@ -53,7 +47,7 @@ public class ScriptService {
     private Map<String, FileScriptParser> parserMap;
 
     public ScriptService(ScriptRepository scriptRepository, UserRepository userRepository, TagRepository tagRepository,
-            ScriptMapper scriptMapper, List<FileScriptParser> parsers, ImageUtil imageUtil) {
+            ScriptMapper scriptMapper, List<FileScriptParser> parsers) {
         this.userRepository = userRepository;
         this.scriptRepository = scriptRepository;
         this.tagRepository = tagRepository;
@@ -63,7 +57,6 @@ public class ScriptService {
         for (FileScriptParser p : parsers) {
             parserMap.put(p.getFileType(), p);
         }
-        this.imageUtil = imageUtil;
 
     }
 
@@ -101,90 +94,50 @@ public class ScriptService {
     }
 
     public ResponseEntity<ScriptDTO> findScriptById(Long id) {
-        Optional<Script> scriptOpt = scriptRepository.findById(id);
-
-        if (scriptOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        return ResponseEntity.ok(scriptMapper.toDto(scriptOpt.get()));
+        Script script = getScript(id);
+        return ResponseEntity.ok(scriptMapper.toDto(script));
     }
 
     @Transactional
-    public ResponseEntity<String> uploadScript(User user, ScriptFileUploadDto fileUpload) {
-
-        MultipartFile scriptFile = fileUpload.getScript();
-        Script script = new Script();
+    public ResponseEntity<String> createScript(User user, ScriptCreateDTO createDTO) {
         User userEntity = userRepository.findById(user.getId()).orElseThrow(
                 () -> new EntityNotFoundException("Unable to find user with ID: " + user.getId().toString()));
 
-        if (scriptFile == null || scriptFile.isEmpty()) {
-            return ResponseEntity.badRequest().body("No file was submitted for script upload");
+        Script script = new Script();
+        script.setStatus(ScriptStatus.DRAFT);
+        script.setAuthor(userEntity);
+        script.setAssetId(UUID.randomUUID());
+        script.setTitle(createDTO.getTitle());
+
+        if (createDTO.getTags() != null) {
+            List<Tag> tags = tagRepository.findAllById(createDTO.getTags());
+            script.addTags(tags);
         }
 
-        try {
-            FileScriptParser parser = parserMap.get(scriptFile.getContentType());
-            if (parser == null) {
-                return ResponseEntity.badRequest().body(
-                        "File type of " + scriptFile.getContentType().replace("application/", "") + "is unsupported");
-            }
-            script = parser.parseFile(fileUpload);
-            script.setStatus(ScriptStatus.DRAFT);
-            script.setTitle(fileUpload.getTitle());
-            script.setAuthor(userEntity);
-            if (fileUpload.getTags() != null) {
-                List<Tag> tags = tagRepository.findAllById(fileUpload.getTags());
-                script.addTags(tags);
-            }
+        MultipartFile scriptFile = createDTO.getScript();
+        if (scriptFile != null && !scriptFile.isEmpty()) {
 
-            script = scriptRepository.save(script);
+            try {
+                FileScriptParser parser = parserMap.get(scriptFile.getContentType());
+                if (parser == null) {
+                    return ResponseEntity.badRequest().body(
+                            "File type of " + scriptFile.getContentType().replace("application/", "")
+                                    + "is unsupported");
+                }
+                parser.parseFile(createDTO, script);
 
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().body("Failed to upload file: " + e.getMessage());
+            } catch (Exception e) {
+                e.printStackTrace();
+                return ResponseEntity.internalServerError().body("Failed to upload file: " + e.getMessage());
+            }
         }
+        script = scriptRepository.save(script);
         return new ResponseEntity<>("" + script.getId(), HttpStatus.CREATED);
     }
 
-    public ResponseEntity<ScriptImageDTO> uploadImage(Long id, MultipartFile upload) {
-        Optional<Script> scriptOpt = scriptRepository.findById(id);
-        if (scriptOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        try {
-            Script script = scriptOpt.get();
-            BufferedImage image = ImageIO.read(upload.getInputStream());
-
-            log.info("Submitting new Image");
-            long order = script.getImages().size() + 1;
-            String imageName = "script_img_" + order + ".png";
-            imageUtil.saveImageToDirectory(image, imageName, script.getAssetId());
-            return new ResponseEntity<ScriptImageDTO>(
-                    imageUtil.toDto(imageUtil
-                            .persistScriptImage(
-                                    new ScriptImage(order, script, imageName))),
-                    HttpStatus.CREATED);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
-    public ResponseEntity<Void> deleteImage(Long imageId) {
-        imageUtil.removeScriptImage(imageId);
-        return new ResponseEntity<>(HttpStatus.OK);
-    }
-
     public ResponseEntity<ScriptDTO> patchScript(Long id, ScriptPatchDTO patchDTO) {
-        Optional<Script> scriptOpt = scriptRepository.findById(id);
 
-        if (scriptOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Script script = scriptOpt.get();
+        Script script = getScript(id);
         script.setTitle(patchDTO.getTitle());
         script.setContent(patchDTO.getContent());
 
@@ -215,23 +168,26 @@ public class ScriptService {
     }
 
     public ResponseEntity<Void> likeScript(Long id, User user) {
-        Optional<Script> scriptOpt = scriptRepository.findById(id);
+
         User userEntity = userRepository.findById(user.getId()).orElseThrow(
                 () -> new EntityNotFoundException("Unable to find user with ID: " + user.getId().toString()));
 
-        if (scriptOpt.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
-
-        Script script = scriptOpt.get();
+        Script script = getScript(id);
 
         if (userEntity.getLikedScripts().contains(script)) {
+            log.info("User {} unliked script {}", user.getUsername(), id);
             userEntity.getLikedScripts().remove(script);
         } else {
+            log.info("User {} liked script {}", user.getUsername(), id);
             userEntity.getLikedScripts().add(script);
         }
         userRepository.save(userEntity);
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    public Script getScript(Long scriptId) throws EntityNotFoundException {
+        return scriptRepository.findById(scriptId)
+                .orElseThrow(() -> new EntityNotFoundException("Unable to find script with ID: " + scriptId));
     }
 
 }
