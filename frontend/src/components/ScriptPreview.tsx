@@ -1,7 +1,7 @@
+import ReactMarkdown from "react-markdown";
 import { useNavigate } from "react-router";
 import type { Script } from "../types/ScriptTypes";
 import { InputButton } from "./MultiInputButtons";
-import ReactMarkdown from "react-markdown";
 
 type ScriptPreviewProps = {
   script: Script;
@@ -12,7 +12,7 @@ export default function ScriptPreview({ script }: ScriptPreviewProps) {
 
   return (
     <div
-      className="border  rounded-lg border-white/20 w-xs md:w-5xl flex flex-col gap-2 bg-blue-950 shadow hover:shadow-blue-200 hover:cursor-pointer"
+      className="border  rounded-lg border-white/20 w-xs md:w-5xl flex flex-col gap-2 bg-blue-950 shadow transition hover:shadow-blue-200 hover:cursor-pointer"
       onClick={() => nav(`/scripts/${script.id}`)}
     >
       <div className="p-2">
@@ -50,6 +50,44 @@ export default function ScriptPreview({ script }: ScriptPreviewProps) {
         {script.modifyDate && (
           <p>Modified: {new Date(script.modifyDate).toLocaleDateString()}</p>
         )}
+      </div>
+    </div>
+  );
+}
+
+export function SmallScriptPreview({ script }: ScriptPreviewProps) {
+  return (
+    <div
+      key={script.id}
+      className="bg-blue-950 border border-white/20  rounded w-30 md:w-50 hover:shadow-blue-200 hover:cursor-pointer shadow transition"
+    >
+      <div className="p-2">
+        <h3>{script.title}</h3>
+        <p>{script.author.username}</p>
+      </div>
+      <div className="p-2 border-t md:border-b text-white/50 border-white/20">
+        <ReactMarkdown
+          components={{
+            p: ({ children }) => (
+              <div className="line-clamp-3 h-12">{children}</div>
+            ),
+          }}
+        >
+          {script.content && script.content.replace(/\{img_[1-9]\}+/g, "")}
+        </ReactMarkdown>
+      </div>
+      <div className="hidden md:block">
+        <div className="flex flex-wrap gap-2 mt-2 p-2">
+          {script.tags.slice(0, 3).map((tag, i) => (
+            <InputButton valueType={tag.type} label={tag.tag} key={i} />
+          ))}
+        </div>
+        <div className="text-slate-400 px-2">
+          <p>Created: {new Date(script.createDate).toLocaleDateString()}</p>
+          {script.modifyDate && (
+            <p>Modified: {new Date(script.modifyDate).toLocaleDateString()}</p>
+          )}
+        </div>
       </div>
     </div>
   );
